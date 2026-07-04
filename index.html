@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>hiraethdusk</title>
+  <meta name="description" content="little web toys, made slowly and on purpose." />
+
+  <!-- fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <!-- shared foundations, then this page's styles -->
+  <link rel="stylesheet" href="/assets/css/base.css" />
+  <link rel="stylesheet" href="/assets/css/home.css" />
+</head>
+<body>
+
+  <header class="sky grain">
+    <div class="sky-sun"></div>
+    <div class="sky-inner">
+      <h1 class="wordmark">hiraethdusk</h1>
+      <p class="tagline">little web toys, made slowly and on purpose.</p>
+    </div>
+  </header>
+
+  <main class="shelf-wrap">
+    <p class="eyebrow">the shelf</p>
+
+    <div class="shelf">
+      <!-- Toy #1. Each card sets its own --accent colour.
+           To add a toy: copy this block, change the folder in href,
+           the chip glyph, name, desc, and pick an accent from base.css
+           (--gold, --coral, --rose, --sky, --sage). -->
+      <a class="toy" href="/spinner/" style="--accent: var(--coral);">
+        <span class="toy-chip">🎡</span>
+        <p class="toy-name">Rigged Spinner</p>
+        <p class="toy-desc">A wheel that looks perfectly fair. It never is.</p>
+      </a>
+    </div>
+  </main>
+
+  <footer class="foot">
+    <p class="def"><b>hiraeth</b> · a soft longing for a home that maybe never was</p>
+    <p>made by hiraethdusk</p>
+  </footer>
+
+</body>
+</html>

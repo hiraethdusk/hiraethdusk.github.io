@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rigged Spinner · hiraethdusk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/base.css" />
+  <link rel="stylesheet" href="spinner.css" />
+</head>
+<body>
+
+  <a class="btn back" href="/">← back</a>
+
+  <h1>Rigged Spinner 🎡</h1>
+
+  <div class="wheel-wrap">
+    <canvas id="wheel" width="600" height="600"></canvas>
+    <div class="hub"></div>
+  </div>
+
+  <div class="controls">
+    <button class="btn" id="spin-btn">Spin</button>
+    <div class="result" id="result"></div>
+
+    <details>
+      <summary>edit options</summary>
+      <div class="edit-inner" id="edit-inner">
+        <!-- rows injected by JS -->
+      </div>
+      <div class="edit-actions" style="padding: 0 1.2rem 1rem;">
+        <button class="btn" id="add-btn" style="--btn-accent:var(--sage);">+ add option</button>
+        <button class="btn" id="apply-btn" style="--btn-accent:var(--coral);">apply</button>
+      </div>
+    </details>
+  </div>
+
+<script>
+// ============================================================
+//  THE RIG: how it works
+//  The wheel *draws* slices of equal size and spins with real
+//  deceleration easing — it looks 100% fair.
+//  But before the animation starts, we secretly compute what
+//  final rotation lands the pointer on the rigged option, then
+//  work backwards to choose a spin amount that lands there.
+//  The user sees a convincing multi-revolution spin; it always
+//  stops on the chosen option. The rig is in the math, not the
+//  animation — there's nothing visually suspicious.
+// ============================================================
+
+const canvas = document.getElementById('wheel');
+const ctx    = canvas.getContext('2d');
+const W      = canvas.width;
+const CX     = W / 2, CY = W / 2, R = W / 2 - 8;
+
+// ---- palette: same tokens as base.css, kept in sync manually ----
+const SLICE_COLOURS = [
+  '#f9b48f', // peach
+  '#9ec9d8', // sky
+  '#f2a7b8', // rose
+  '#a9ccae', // sage
+  '#f6cf7d', // gold
+  '#f58a72', // coral
+  '#c9b8ec', // soft lavender (one controlled use, as a 6th)
+];
+
+// ---- state ----
+let options   = ['Pizza', 'Tacos', 'Sushi', 'Burgers', 'Pasta'];
+let riggedIdx = 0;      // index of the option that always wins
+let rotation  = 0;      // current wheel rotation in radians
+let spinning  = false;
+
+// ---- draw ----
+function drawWheel(rot) {
+  ctx.clearRect(0, 0, W, W);
+  const n     = options.length;
+  const slice = (2 * Math.PI) / n;
+
+  options.forEach((label, i) => {
+    const start = rot + i * slice - Math.PI / 2;
+    const end   = start + slice;
+
+    // slice fill
+    ctx.beginPath();
+    ctx.moveTo(CX, CY);
+    ctx.arc(CX, CY, R, start, end);
+    ctx.closePath();
+    ctx.fillStyle = SLICE_COLOURS[i % SLICE_COLOURS.length];
+    ctx.fill();
+
+    // slice border
+    ctx.strokeStyle = 'rgba(63,53,58,0.18)';
+    ctx.lineWidth   = 2;
+    ctx.stroke();
+
+    // label
+    ctx.save();
+    ctx.translate(CX, CY);
+    ctx.rotate(start + slice / 2);
+    ctx.textAlign    = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle    = '#3f353a';
+    ctx.font         = `bold ${Math.max(16, Math.min(26, Math.floor(420 / n)))}px "Fredoka", sans-serif`;
+    ctx.fillText(label.length > 11 ? label.slice(0, 10) + '…' : label, R - 18, 0);
+    ctx.restore();
+  });
+}
+
+// ---- the rig math ----
+// The pointer sits at the top (−π/2 from 0 radians in canvas coords).
+// Slice i occupies angles [i*slice, (i+1)*slice] relative to rotation.
+// We want the midpoint of slice riggedIdx to land under the pointer.
+// targetAngle = -(riggedIdx + 0.5) * slice  (so that slice mid → top)
+// We add enough full revolutions (5-8) to make it look like a real spin.
+function getRiggedSpin() {
+  const n      = options.length;
+  const slice  = (2 * Math.PI) / n;
+  // where the rigged slice mid should end up: at -π/2 (top pointer)
+  const target = -(riggedIdx + 0.5) * slice;
+  // current rotation mod 2π
+  const cur    = ((rotation % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+  // normalise target to [0, 2π)
+  const tNorm  = ((target % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+  // extra angle needed on top of current position
+  let delta = tNorm - cur;
+  if (delta < 0) delta += 2 * Math.PI;
+  // add 5–8 full revolutions so the spin looks substantial
+  const revs = 5 + Math.floor(Math.random() * 4);
+  return delta + revs * 2 * Math.PI;
+}
+
+// ---- animation ----
+// Uses an ease-out cubic so deceleration looks natural/physical.
+function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+
+function spin() {
+  if (spinning) return;
+  spinning = true;
+
+  const resultEl = document.getElementById('result');
+  resultEl.classList.remove('show');
+  resultEl.textContent = '';
+
+  const totalAngle = getRiggedSpin();
+  const duration   = 3500 + Math.random() * 1000; // 3.5–4.5s
+  const startRot   = rotation;
+  let   startTime  = null;
+
+  function frame(ts) {
+    if (!startTime) startTime = ts;
+    const elapsed = ts - startTime;
+    const t       = Math.min(elapsed / duration, 1);
+    rotation      = startRot + totalAngle * easeOut(t);
+    drawWheel(rotation);
+
+    if (t < 1) {
+      requestAnimationFrame(frame);
+    } else {
+      spinning = false;
+      resultEl.textContent = '🎉 ' + options[riggedIdx] + '!';
+      resultEl.classList.add('show');
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+document.getElementById('spin-btn').addEventListener('click', spin);
+
+// ---- edit panel ----
+function buildEditRows() {
+  const container = document.getElementById('edit-inner');
+  container.innerHTML = '';
+  options.forEach((opt, i) => {
+    const row = document.createElement('div');
+    row.className = 'edit-row';
+
+    const input = document.createElement('input');
+    input.type  = 'text';
+    input.value = opt;
+    input.dataset.idx = i;
+
+    const star = document.createElement('button');
+    star.className = 'rig-btn' + (i === riggedIdx ? ' rigged' : '');
+    star.textContent = '⭐';
+    star.title = 'rig this one';
+    star.dataset.idx = i;
+    star.addEventListener('click', () => {
+      riggedIdx = i;
+      // update all stars
+      container.querySelectorAll('.rig-btn').forEach((b, j) => {
+        b.classList.toggle('rigged', j === i);
+      });
+    });
+
+    row.appendChild(input);
+    row.appendChild(star);
+    container.appendChild(row);
+  });
+}
+
+document.getElementById('add-btn').addEventListener('click', () => {
+  options.push('Option ' + (options.length + 1));
+  buildEditRows();
+});
+
+document.getElementById('apply-btn').addEventListener('click', () => {
+  const inputs = document.getElementById('edit-inner').querySelectorAll('input[type="text"]');
+  options = Array.from(inputs).map(inp => inp.value.trim() || '?');
+  if (riggedIdx >= options.length) riggedIdx = 0;
+  drawWheel(rotation);
+  document.getElementById('result').classList.remove('show');
+});
+
+// ---- init ----
+buildEditRows();
+drawWheel(rotation);
+</script>
+</body>
+</html>

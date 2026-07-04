@@ -1,0 +1,111 @@
+/* ============================================================
+   base.css — shared foundations for every hiraethdusk toy
+   Design tokens, a light reset, the grain texture, and the
+   tactile button. Import this on every page, then add a
+   page-specific stylesheet after it.
+   ============================================================ */
+
+:root {
+  /* --- palette: a warm dusk. deliberately no purple. --- */
+  --paper:    #fdf9f4;  /* warm paper white — the page background */
+  --ink:      #3f353a;  /* warm charcoal — main text (softer than black) */
+  --ink-soft: #8a7f83;  /* muted — secondary text */
+  --card:     #fffdfb;  /* card / panel surface */
+  --line:     #efe6dc;  /* hairline borders */
+
+  /* accent hues — a sunset spread, used sparingly */
+  --gold:  #f6cf7d;
+  --peach: #f9b48f;
+  --coral: #f58a72;
+  --rose:  #f2a7b8;
+  --sky:   #9ec9d8;
+  --sage:  #a9ccae;
+
+  /* the dusk gradient: cool sky up top → warm gold at the horizon */
+  --dusk: linear-gradient(180deg, #a9cddb 0%, #f5cfa0 52%, #f7ab8a 80%, #f6bd94 100%);
+
+  /* shape + depth */
+  --radius:      18px;
+  --radius-lg:   28px;
+  --shadow:      0 10px 30px rgba(63, 53, 58, 0.10);
+  --shadow-lift: 0 18px 42px rgba(245, 138, 114, 0.26);
+
+  /* type — swap these two lines to restyle the whole site */
+  --font-display: "Fredoka", system-ui, sans-serif;
+  --font-body:    "Nunito", system-ui, sans-serif;
+
+  /* a gentle springy easing with a little overshoot */
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* --- light reset --- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- grain: the anti-"AI-flat-gradient" texture ---
+   Add class="grain" to any positioned (relative) element and it
+   lays a faint noise film on top. This is what stops the pastel
+   gradients from reading as a lazy CSS default. */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.45;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ============================================================
+   .btn — the shared tactile button
+   Chunky offset shadow that compresses when pressed.
+   Set --btn-accent per-use to change the hover fill.
+   ============================================================ */
+.btn {
+  --btn-accent: var(--coral);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.05rem;
+  color: var(--ink);
+  background: var(--card);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  padding: 0.7rem 1.6rem;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 4px 0 var(--ink);
+  transition: transform 0.12s var(--spring),
+              box-shadow 0.12s var(--spring),
+              background 0.2s ease;
+}
+.btn:hover {
+  background: var(--btn-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 var(--ink);
+}
+.btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 var(--ink);   /* pressed flat */
+}
+.btn:focus-visible {
+  outline: 3px solid var(--sky);
+  outline-offset: 3px;
+}
+
+/* respect people who ask their OS for less motion */
+@media (prefers-reduced-motion: reduce) {
+  .btn { transition: background 0.2s ease; }
+  .btn:hover, .btn:active { transform: none; }
+}

@@ -1,0 +1,133 @@
+/* ============================================================
+   home.css — styles for the landing page only.
+   Loaded after base.css, so it can use all the tokens.
+   ============================================================ */
+
+/* --- the hero sky, with a setting sun behind the wordmark --- */
+.sky {
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  padding: 6rem 1.5rem 4.5rem;
+  background: var(--dusk);
+  border-bottom: 1px solid var(--line);
+}
+
+/* soft glowing sun, low on the horizon, dipping below */
+.sky-sun {
+  position: absolute;
+  bottom: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+              rgba(255, 248, 230, 0.95) 0%,
+              rgba(250, 205, 150, 0.55) 42%,
+              rgba(250, 205, 150, 0) 70%);
+}
+
+.sky-inner { position: relative; z-index: 1; }
+
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(2.7rem, 8.5vw, 4.4rem);
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0;
+}
+
+.tagline {
+  margin: 0.5rem 0 0;
+  font-size: clamp(1rem, 3.6vw, 1.2rem);
+  color: #6b5a52;
+}
+
+/* --- the shelf --- */
+.shelf-wrap {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 3.5rem 1.5rem 2rem;
+}
+
+.eyebrow {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  margin: 0 0 1.4rem;
+}
+
+.shelf {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 1.1rem;
+}
+
+/* each toy card. it carries its own --accent so the shelf
+   feels varied as it fills up. tactile lift + press. */
+.toy {
+  --accent: var(--coral);
+  position: relative;
+  display: block;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem 1.6rem 1.6rem;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s var(--spring),
+              box-shadow 0.2s var(--spring),
+              border-color 0.2s ease;
+}
+.toy:hover,
+.toy:focus-visible {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lift);
+  border-color: var(--accent);
+  outline: none;
+}
+.toy:active { transform: translateY(-1px); }
+.toy:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+/* the little accent chip / glyph */
+.toy-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  font-size: 1.4rem;
+  background: color-mix(in srgb, var(--accent) 22%, white);
+}
+
+.toy-name {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.25rem;
+  margin: 0.9rem 0 0.3rem;
+}
+.toy-desc {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+}
+
+/* --- footer: the name, quietly explained --- */
+.foot {
+  text-align: center;
+  padding: 2.5rem 1.5rem 3.5rem;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+}
+.foot .def { margin: 0 0 0.35rem; }
+.foot .def b { color: var(--coral); font-weight: 700; }
+
+@media (prefers-reduced-motion: reduce) {
+  .toy { transition: border-color 0.2s ease; }
+  .toy:hover, .toy:active { transform: none; }
+}
