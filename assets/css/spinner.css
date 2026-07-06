@@ -1,5 +1,5 @@
 /* ============================================================
-   spinner.css — Rigged Spinner toy styles
+   spinner.css — Spinner toy styles
    ============================================================ */
 
 body {
@@ -149,8 +149,8 @@ summary::before { content: "⚙ "; }
 }
 .edit-row input[type="text"]:focus { border-color: var(--coral); }
 
-/* the rigged toggle — a star marks the forced winner */
-.rig-btn {
+/* star button — marks the forced winner */
+.star-btn {
   background: none;
   border: none;
   font-size: 1.1rem;
@@ -160,8 +160,8 @@ summary::before { content: "⚙ "; }
   padding: 0;
   line-height: 1;
 }
-.rig-btn.rigged { opacity: 1; transform: scale(1.2); }
-.rig-btn title { display: none; }
+.star-btn.winner { opacity: 1; transform: scale(1.2); }
+.star-btn title { display: none; }
 
 .edit-actions {
   display: flex;

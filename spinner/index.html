@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rigged Spinner · hiraethdusk</title>
+  <title>Spinner · hiraethdusk</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
@@ -14,7 +14,7 @@
 
   <a class="btn back" href="/">← back</a>
 
-  <h1>Rigged Spinner 🎡</h1>
+  <h1>Spinner 🎡</h1>
 
   <div class="wheel-wrap">
     <canvas id="wheel" width="600" height="600"></canvas>
@@ -39,15 +39,12 @@
 
 <script>
 // ============================================================
-//  THE RIG: how it works
-//  The wheel *draws* slices of equal size and spins with real
-//  deceleration easing — it looks 100% fair.
-//  But before the animation starts, we secretly compute what
-//  final rotation lands the pointer on the rigged option, then
-//  work backwards to choose a spin amount that lands there.
-//  The user sees a convincing multi-revolution spin; it always
-//  stops on the chosen option. The rig is in the math, not the
-//  animation — there's nothing visually suspicious.
+//  How the winner is forced
+//  The wheel draws equal slices and spins with real deceleration
+//  — it looks fair. Before the animation starts we compute what
+//  final rotation puts the pointer inside the winner's slice,
+//  then pick a total spin that lands there. A random offset
+//  within the slice means it never stops at exactly the centre.
 // ============================================================
 
 const canvas = document.getElementById('wheel');
@@ -68,7 +65,7 @@ const SLICE_COLOURS = [
 
 // ---- state ----
 let options   = ['Pizza', 'Tacos', 'Sushi', 'Burgers', 'Pasta'];
-let riggedIdx = 0;      // index of the option that always wins
+let winnerIdx = 0;      // index of the option that always wins
 let rotation  = 0;      // current wheel rotation in radians
 let spinning  = false;
 
@@ -108,25 +105,20 @@ function drawWheel(rot) {
   });
 }
 
-// ---- the rig math ----
+// ---- spin math ----
 // The pointer sits at the top (−π/2 from 0 radians in canvas coords).
 // Slice i occupies angles [i*slice, (i+1)*slice] relative to rotation.
-// We want the midpoint of slice riggedIdx to land under the pointer.
-// targetAngle = -(riggedIdx + 0.5) * slice  (so that slice mid → top)
-// We add enough full revolutions (5-8) to make it look like a real spin.
-function getRiggedSpin() {
+// A random offset within the middle 60% of the slice means the wheel
+// never stops at exactly the centre — it lands somewhere believably off.
+function getSpin() {
   const n      = options.length;
   const slice  = (2 * Math.PI) / n;
-  // where the rigged slice mid should end up: at -π/2 (top pointer)
-  const target = -(riggedIdx + 0.5) * slice;
-  // current rotation mod 2π
+  const jitter = (Math.random() - 0.5) * 0.6; // random offset: ±30% of a slice
+  const target = -(winnerIdx + 0.5 + jitter) * slice;
   const cur    = ((rotation % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-  // normalise target to [0, 2π)
   const tNorm  = ((target % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-  // extra angle needed on top of current position
   let delta = tNorm - cur;
   if (delta < 0) delta += 2 * Math.PI;
-  // add 5–8 full revolutions so the spin looks substantial
   const revs = 5 + Math.floor(Math.random() * 4);
   return delta + revs * 2 * Math.PI;
 }
@@ -143,7 +135,7 @@ function spin() {
   resultEl.classList.remove('show');
   resultEl.textContent = '';
 
-  const totalAngle = getRiggedSpin();
+  const totalAngle = getSpin();
   const duration   = 3500 + Math.random() * 1000; // 3.5–4.5s
   const startRot   = rotation;
   let   startTime  = null;
@@ -159,7 +151,7 @@ function spin() {
       requestAnimationFrame(frame);
     } else {
       spinning = false;
-      resultEl.textContent = '🎉 ' + options[riggedIdx] + '!';
+      resultEl.textContent = '🎉 ' + options[winnerIdx] + '!';
       resultEl.classList.add('show');
     }
   }
@@ -182,15 +174,14 @@ function buildEditRows() {
     input.dataset.idx = i;
 
     const star = document.createElement('button');
-    star.className = 'rig-btn' + (i === riggedIdx ? ' rigged' : '');
+    star.className = 'star-btn' + (i === winnerIdx ? ' winner' : '');
     star.textContent = '⭐';
-    star.title = 'rig this one';
+    star.title = 'set as winner';
     star.dataset.idx = i;
     star.addEventListener('click', () => {
-      riggedIdx = i;
-      // update all stars
-      container.querySelectorAll('.rig-btn').forEach((b, j) => {
-        b.classList.toggle('rigged', j === i);
+      winnerIdx = i;
+      container.querySelectorAll('.star-btn').forEach((b, j) => {
+        b.classList.toggle('winner', j === i);
       });
     });
 
@@ -208,7 +199,7 @@ document.getElementById('add-btn').addEventListener('click', () => {
 document.getElementById('apply-btn').addEventListener('click', () => {
   const inputs = document.getElementById('edit-inner').querySelectorAll('input[type="text"]');
   options = Array.from(inputs).map(inp => inp.value.trim() || '?');
-  if (riggedIdx >= options.length) riggedIdx = 0;
+  if (winnerIdx >= options.length) winnerIdx = 0;
   drawWheel(rotation);
   document.getElementById('result').classList.remove('show');
 });
