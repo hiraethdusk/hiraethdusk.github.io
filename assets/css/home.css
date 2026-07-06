@@ -61,12 +61,15 @@
   margin: 0 0 1.4rem;
 }
 
-/* books row: spines sit side by side, bottom-aligned on the plank */
+/* books row: spines sit side by side, bottom-aligned on the plank.
+   perspective makes the scale on hover read as depth, not just size. */
 .books {
   display: flex;
   align-items: flex-end;
-  gap: 7px;
-  padding: 0 14px; /* the plank extends 14px beyond the outermost books */
+  gap: 12px; /* wide enough that the pages strip doesn't crowd the next book */
+  padding: 0 14px;
+  perspective: 700px;
+  perspective-origin: 50% 120%;
 }
 
 /* the wooden shelf plank */
@@ -96,43 +99,60 @@
   width: 60px;
   height: var(--book-h);
   background: var(--book-color);
-  border-radius: 2px 6px 6px 2px; /* square binding left, slightly rounded pages right */
+  border-radius: 2px 5px 5px 2px;
   text-decoration: none;
   flex-shrink: 0;
 
-  /* binding shadow on left, pages edge on right, cast shadow below */
+  /* binding crease on left, bottom cast shadow */
   box-shadow:
-    inset 7px 0 14px rgba(0, 0, 0, 0.18),
-    inset -1px 0 3px rgba(0, 0, 0, 0.10),
-    inset 2px 0 0 rgba(255, 255, 255, 0.22),
-    2px 3px 10px rgba(63, 53, 58, 0.15);
+    inset 8px 0 16px rgba(0, 0, 0, 0.22),
+    inset 2px 0 0 rgba(255, 255, 255, 0.20),
+    2px 4px 12px rgba(63, 53, 58, 0.18);
 
   transition:
-    transform 0.28s var(--spring),
-    box-shadow 0.28s ease;
+    transform 0.32s var(--spring),
+    box-shadow 0.32s ease;
 }
 
-/* subtle top highlight + bottom shadow for depth */
+/* top-highlight + bottom-shadow gradient baked onto the spine face */
 .book::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
   background: linear-gradient(to bottom,
-    rgba(255, 255, 255, 0.12) 0%,
-    transparent 35%,
-    rgba(0, 0, 0, 0.07) 100%);
+    rgba(255, 255, 255, 0.16) 0%,
+    transparent 30%,
+    rgba(0, 0, 0, 0.10) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* pages strip — gives the book visible thickness */
+.book::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  right: -9px;
+  bottom: 3px;
+  width: 9px;
+  background: linear-gradient(to right,
+    #c8bfb4 0%,
+    #ddd6cc 30%,
+    #ede8e2 70%,
+    #f5f1ec 100%);
+  border-radius: 0 2px 2px 0;
   pointer-events: none;
 }
 
+/* hover: slides up and toward the viewer, shadow deepens */
 .book:hover,
 .book:focus-visible {
-  transform: translateY(-20px);
+  transform: translateY(-14px) scale(1.08);
   box-shadow:
-    inset 7px 0 14px rgba(0, 0, 0, 0.18),
-    inset -1px 0 3px rgba(0, 0, 0, 0.10),
-    inset 2px 0 0 rgba(255, 255, 255, 0.22),
-    5px 18px 32px rgba(63, 53, 58, 0.32); /* rises away from shelf */
+    inset 8px 0 16px rgba(0, 0, 0, 0.22),
+    inset 2px 0 0 rgba(255, 255, 255, 0.20),
+    6px 22px 38px rgba(63, 53, 58, 0.36);
 }
 
 .book:focus-visible {
@@ -143,24 +163,26 @@
 .book-title {
   writing-mode: vertical-rl;
   font-family: var(--font-display);
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  color: rgba(63, 53, 58, 0.60);
-  letter-spacing: 0.06em;
+  color: rgba(63, 53, 58, 0.55);
+  letter-spacing: 0.10em;
   padding: 14px 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   max-height: calc(var(--book-h) - 28px);
-  transition: color 0.2s ease;
+  transition: color 0.22s ease, text-shadow 0.22s ease;
   pointer-events: none;
-  position: relative; /* sits above the ::before overlay */
-  z-index: 1;
+  position: relative;
+  z-index: 2;
 }
 
+/* title lights up white as the book comes toward you */
 .book:hover .book-title,
 .book:focus-visible .book-title {
-  color: var(--ink);
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.20);
 }
 
 /* --- footer: the name, quietly explained --- */
