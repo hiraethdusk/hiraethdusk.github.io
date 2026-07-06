@@ -149,17 +149,19 @@ summary::before { content: "⚙ "; }
 }
 .edit-row input[type="text"]:focus { border-color: var(--coral); }
 
-/* star button — marks the forced winner */
+/* star button — marks the forced winner.
+   hidden on non-winner rows; fades in on hover as a click hint. */
 .star-btn {
   background: none;
   border: none;
   font-size: 1.1rem;
   cursor: pointer;
-  opacity: 0.3;
+  opacity: 0;
   transition: opacity 0.15s ease, transform 0.15s ease;
   padding: 0;
   line-height: 1;
 }
+.edit-row:hover .star-btn { opacity: 0.35; }
 .star-btn.winner { opacity: 1; transform: scale(1.2); }
 .star-btn title { display: none; }
 
