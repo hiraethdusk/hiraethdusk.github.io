@@ -28,17 +28,18 @@
   <main class="shelf-wrap">
     <p class="eyebrow">the shelf</p>
 
-    <div class="shelf">
-      <!-- Toy #1. Each card sets its own --accent colour.
-           To add a toy: copy this block, change the folder in href,
-           the chip glyph, name, desc, and pick an accent from base.css
-           (--gold, --coral, --rose, --sky, --sage). -->
-      <a class="toy" href="/spinner/" style="--accent: var(--coral);">
-        <span class="toy-chip">🎡</span>
-        <p class="toy-name">Rigged Spinner</p>
-        <p class="toy-desc">A wheel that looks perfectly fair. It never is.</p>
+    <div class="books">
+      <!-- ── Add a new toy: copy one <a class="book"> block ────────────
+           href         → the folder path, e.g. /brackets/
+           --book-color → any accent from base.css:
+                          --gold  --peach  --coral  --rose  --sky  --sage
+           --book-h     → optional height in px (default: 160px)
+           ──────────────────────────────────────────────────────────── -->
+      <a class="book" href="/spinner/" style="--book-color: var(--coral);">
+        <span class="book-title">Rigged Spinner</span>
       </a>
     </div>
+    <div class="shelf-plank"></div>
   </main>
 
   <footer class="foot">

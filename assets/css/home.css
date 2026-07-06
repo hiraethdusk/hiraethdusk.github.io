@@ -61,60 +61,106 @@
   margin: 0 0 1.4rem;
 }
 
-.shelf {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 1.1rem;
+/* books row: spines sit side by side, bottom-aligned on the plank */
+.books {
+  display: flex;
+  align-items: flex-end;
+  gap: 7px;
+  padding: 0 14px; /* the plank extends 14px beyond the outermost books */
 }
 
-/* each toy card. it carries its own --accent so the shelf
-   feels varied as it fills up. tactile lift + press. */
-.toy {
-  --accent: var(--coral);
+/* the wooden shelf plank */
+.shelf-plank {
+  height: 22px;
+  background: linear-gradient(to bottom,
+    #d4a870 0%,
+    #b57840 55%,
+    #8e5c28 100%);
+  border-radius: 3px;
+  box-shadow:
+    0 10px 28px rgba(63, 53, 58, 0.30),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+/* individual book spine
+   ── To add a new toy: paste one <a class="book"> block in index.html
+      and set --book-color to any accent from base.css.          ── */
+.book {
+  --book-color: var(--coral);
+  --book-h: 160px;
+
   position: relative;
-  display: block;
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  padding: 1.5rem 1.6rem 1.6rem;
-  text-decoration: none;
-  color: inherit;
-  transition: transform 0.2s var(--spring),
-              box-shadow 0.2s var(--spring),
-              border-color 0.2s ease;
-}
-.toy:hover,
-.toy:focus-visible {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-lift);
-  border-color: var(--accent);
-  outline: none;
-}
-.toy:active { transform: translateY(-1px); }
-.toy:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
-
-/* the little accent chip / glyph */
-.toy-chip {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  font-size: 1.4rem;
-  background: color-mix(in srgb, var(--accent) 22%, white);
+  width: 60px;
+  height: var(--book-h);
+  background: var(--book-color);
+  border-radius: 2px 6px 6px 2px; /* square binding left, slightly rounded pages right */
+  text-decoration: none;
+  flex-shrink: 0;
+
+  /* binding shadow on left, pages edge on right, cast shadow below */
+  box-shadow:
+    inset 7px 0 14px rgba(0, 0, 0, 0.18),
+    inset -1px 0 3px rgba(0, 0, 0, 0.10),
+    inset 2px 0 0 rgba(255, 255, 255, 0.22),
+    2px 3px 10px rgba(63, 53, 58, 0.15);
+
+  transition:
+    transform 0.28s var(--spring),
+    box-shadow 0.28s ease;
 }
 
-.toy-name {
-  font-family: var(--font-display);
-  font-weight: 500;
-  font-size: 1.25rem;
-  margin: 0.9rem 0 0.3rem;
+/* subtle top highlight + bottom shadow for depth */
+.book::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom,
+    rgba(255, 255, 255, 0.12) 0%,
+    transparent 35%,
+    rgba(0, 0, 0, 0.07) 100%);
+  pointer-events: none;
 }
-.toy-desc {
-  margin: 0;
-  font-size: 0.95rem;
-  color: var(--ink-soft);
+
+.book:hover,
+.book:focus-visible {
+  transform: translateY(-20px);
+  box-shadow:
+    inset 7px 0 14px rgba(0, 0, 0, 0.18),
+    inset -1px 0 3px rgba(0, 0, 0, 0.10),
+    inset 2px 0 0 rgba(255, 255, 255, 0.22),
+    5px 18px 32px rgba(63, 53, 58, 0.32); /* rises away from shelf */
+}
+
+.book:focus-visible {
+  outline: 3px solid var(--sky);
+  outline-offset: 4px;
+}
+
+.book-title {
+  writing-mode: vertical-rl;
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: rgba(63, 53, 58, 0.60);
+  letter-spacing: 0.06em;
+  padding: 14px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-height: calc(var(--book-h) - 28px);
+  transition: color 0.2s ease;
+  pointer-events: none;
+  position: relative; /* sits above the ::before overlay */
+  z-index: 1;
+}
+
+.book:hover .book-title,
+.book:focus-visible .book-title {
+  color: var(--ink);
 }
 
 /* --- footer: the name, quietly explained --- */
@@ -128,6 +174,6 @@
 .foot .def b { color: var(--coral); font-weight: 700; }
 
 @media (prefers-reduced-motion: reduce) {
-  .toy { transition: border-color 0.2s ease; }
-  .toy:hover, .toy:active { transform: none; }
+  .book { transition: box-shadow 0.2s ease; }
+  .book:hover, .book:focus-visible { transform: none; }
 }
