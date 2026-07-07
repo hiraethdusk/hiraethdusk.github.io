@@ -66,6 +66,9 @@
   gap: 12px;
   padding: 0 14px;
   perspective: 900px;
+  /* eye level sits above the shelf, so the tops of the books
+     (and their depth) are visible even at rest */
+  perspective-origin: 50% -40%;
 }
 
 /* the wooden shelf plank */
@@ -87,7 +90,7 @@
 .book {
   --book-color: var(--book-1);
   --book-h: 160px;
-  --book-depth: 30px; /* thickness: how deep the page block on top is */
+  --book-depth: 44px; /* thickness: how deep the page block on top is */
 
   position: relative;
   display: flex;
@@ -110,6 +113,7 @@
      pivot at the bottom edge, so tipping keeps it resting on the shelf */
   transform-style: preserve-3d;
   transform-origin: 50% 100%;
+  transform: rotateX(-6deg); /* resting: leans out a touch, showing depth */
 
   /* binding crease on left, bottom cast shadow */
   box-shadow:
@@ -149,9 +153,12 @@
   height: var(--book-depth);
   transform-origin: center bottom;
   transform: rotateX(90deg);
-  background: repeating-linear-gradient(to right,
-    #f2ede4 0px, #f2ede4 2px,
-    #dcd4c6 2px, #dcd4c6 3px);
+  /* paper lines, fading darker toward the back of the book */
+  background:
+    linear-gradient(to top, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.12) 100%),
+    repeating-linear-gradient(to right,
+      #f2ede4 0px, #f2ede4 2px,
+      #dcd4c6 2px, #dcd4c6 3px);
   border-radius: 2px 3px 0 0;
   /* the pages count as part of the book's hitbox — otherwise hover
      flickers when the tipping book moves out from under the cursor */
@@ -162,14 +169,14 @@
    like a finger pulling its top edge — pages show along the top */
 .book:hover,
 .book:focus-visible {
-  transform: rotateX(-24deg);
+  transform: rotateX(-28deg) scale(1.05);
   box-shadow:
     inset 8px 0 16px rgba(0, 0, 0, 0.22),
     inset 2px 0 0 rgba(255, 255, 255, 0.20),
     0 22px 34px rgba(63, 53, 58, 0.35);
 }
 .book:active {
-  transform: rotateX(-13deg);
+  transform: rotateX(-16deg) scale(1.02);
 }
 
 .book:focus-visible {
@@ -214,5 +221,5 @@
 
 @media (prefers-reduced-motion: reduce) {
   .book { transition: box-shadow 0.2s ease; }
-  .book:hover, .book:focus-visible, .book:active { transform: none; }
+  .book:hover, .book:focus-visible, .book:active { transform: rotateX(-6deg); }
 }

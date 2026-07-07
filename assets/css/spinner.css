@@ -172,8 +172,9 @@ canvas {
 .edit-inner.show-adv .pct { display: block; }
 .edit-row .pct:focus { border-color: var(--sky); }
 
-/* the panel widens to make room for the share column */
-.panel:has(#edit-inner.show-adv) {
+/* the panel widens to make room for the share column —
+   but not while collapsed, so it can shrink back to the pill */
+.panel:not(.collapsed):has(#edit-inner.show-adv) {
   width: 352px;
   max-width: 100%;
 }
