@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dice · hiraethdusk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/base.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link rel="stylesheet" href="/assets/css/dice.css" />
+  <script src="/assets/js/theme.js"></script>
+</head>
+<body>
+
+  <a class="btn back" href="/">← back</a>
+
+  <h1>Dice 🎲</h1>
+
+  <div class="toy-layout">
+    <div class="stage">
+      <div class="dice-row" id="dice-row">
+        <!-- dice injected by JS -->
+      </div>
+      <button class="btn" id="roll-btn">Roll</button>
+      <div class="result" id="result"></div>
+    </div>
+
+    <aside class="panel">
+      <h2 class="panel-title">⚙ options</h2>
+
+      <p class="field-label">sides</p>
+      <div class="seg" id="sides-seg">
+        <button type="button" data-sides="4">d4</button>
+        <button type="button" data-sides="6" class="active">d6</button>
+        <button type="button" data-sides="8">d8</button>
+      </div>
+
+      <p class="field-label">how many dice</p>
+      <div class="stepper">
+        <button type="button" id="count-minus">−</button>
+        <span id="count-label">2</span>
+        <button type="button" id="count-plus">+</button>
+      </div>
+
+      <p class="field-label">the fix</p>
+      <label class="radio-row"><input type="radio" name="mode" value="values" checked /> exact values</label>
+      <label class="radio-row"><input type="radio" name="mode" value="sum" /> target sum</label>
+
+      <div id="values-box" class="rig-box">
+        <div class="values-inputs" id="values-inputs">
+          <!-- per-die inputs injected by JS -->
+        </div>
+        <p class="hint">leave a die blank for an honest roll.</p>
+      </div>
+
+      <div id="sum-box" class="rig-box" hidden>
+        <input type="number" id="sum-input" />
+        <p class="hint" id="sum-hint"></p>
+      </div>
+    </aside>
+  </div>
+
+<script>
+// ============================================================
+//  How the fix works
+//  The dice tumble with a shake animation while their faces
+//  flicker through random numbers — it looks like a real roll.
+//  But the final values were decided before the tumble started:
+//  either the exact values you typed, or a random combination
+//  that adds up to your target sum. Dice left blank roll honestly.
+// ============================================================
+
+// ---- state ----
+let sides   = 6;   // 4, 6 or 8
+let count   = 2;   // number of dice (1–6)
+let mode    = 'values'; // 'values' | 'sum'
+let rolling = false;
+
+const DIE_COLOURS = [
+  'var(--peach)', 'var(--sky)', 'var(--rose)',
+  'var(--sage)', 'var(--gold)', 'var(--coral)',
+];
+
+const diceRow      = document.getElementById('dice-row');
+const valuesInputs = document.getElementById('values-inputs');
+const sumInput     = document.getElementById('sum-input');
+const sumHint      = document.getElementById('sum-hint');
+const resultEl     = document.getElementById('result');
+
+// ---- build the dice + the rig inputs to match count/sides ----
+function buildDice() {
+  diceRow.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const die = document.createElement('div');
+    die.className = 'die';
+    die.dataset.sides = sides;
+    die.style.setProperty('--die-color', DIE_COLOURS[i % DIE_COLOURS.length]);
+    die.innerHTML = '<span>?</span>';
+    diceRow.appendChild(die);
+  }
+
+  valuesInputs.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const inp = document.createElement('input');
+    inp.type = 'number';
+    inp.min = '1';
+    inp.max = String(sides);
+    inp.placeholder = '?';
+    inp.title = 'die ' + (i + 1) + ' (1–' + sides + ')';
+    valuesInputs.appendChild(inp);
+  }
+
+  sumInput.min = String(count);
+  sumInput.max = String(count * sides);
+  sumInput.placeholder = String(Math.round(count * (sides + 1) / 2));
+  sumHint.textContent = 'between ' + count + ' and ' + (count * sides) + '.';
+}
+
+// ---- decide the final faces before the roll starts ----
+function targetValues() {
+  if (mode === 'values') {
+    return Array.from(valuesInputs.querySelectorAll('input')).map(inp => {
+      const v = parseInt(inp.value, 10);
+      // blank or out-of-range → an honest random roll for that die
+      return (v >= 1 && v <= sides) ? v : 1 + Math.floor(Math.random() * sides);
+    });
+  }
+
+  // sum mode: clamp to what's possible, then hand out the excess
+  // one pip at a time to random dice that still have room
+  let target = parseInt(sumInput.value, 10);
+  if (!isFinite(target)) target = Math.round(count * (sides + 1) / 2);
+  target = Math.min(count * sides, Math.max(count, target));
+
+  const vals = new Array(count).fill(1);
+  let rest = target - count;
+  while (rest > 0) {
+    const i = Math.floor(Math.random() * count);
+    if (vals[i] < sides) { vals[i]++; rest--; }
+  }
+  return vals;
+}
+
+// ---- the roll ----
+function roll() {
+  if (rolling) return;
+  rolling = true;
+  resultEl.classList.remove('show');
+  resultEl.textContent = '';
+
+  const finals = targetValues();
+  const dice = diceRow.querySelectorAll('.die');
+
+  dice.forEach((die, i) => {
+    die.classList.add('rolling');
+    const face = die.querySelector('span');
+    const flicker = setInterval(() => {
+      face.textContent = 1 + Math.floor(Math.random() * sides);
+    }, 75);
+
+    // dice settle one after another, like a real tumble
+    setTimeout(() => {
+      clearInterval(flicker);
+      face.textContent = finals[i];
+      die.classList.remove('rolling');
+
+      if (i === dice.length - 1) {
+        rolling = false;
+        const total = finals.reduce((s, v) => s + v, 0);
+        resultEl.textContent = '🎉 total: ' + total;
+        resultEl.classList.add('show');
+      }
+    }, 900 + i * 350);
+  });
+}
+
+// ---- wire up the panel ----
+document.querySelectorAll('#sides-seg button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (rolling) return;
+    sides = parseInt(btn.dataset.sides, 10);
+    document.querySelectorAll('#sides-seg button').forEach(b => {
+      b.classList.toggle('active', b === btn);
+    });
+    buildDice();
+  });
+});
+
+document.getElementById('count-minus').addEventListener('click', () => {
+  if (rolling || count <= 1) return;
+  count--;
+  document.getElementById('count-label').textContent = count;
+  buildDice();
+});
+document.getElementById('count-plus').addEventListener('click', () => {
+  if (rolling || count >= 6) return;
+  count++;
+  document.getElementById('count-label').textContent = count;
+  buildDice();
+});
+
+document.querySelectorAll('input[name="mode"]').forEach(radio => {
+  radio.addEventListener('change', () => {
+    mode = radio.value;
+    document.getElementById('values-box').hidden = (mode !== 'values');
+    document.getElementById('sum-box').hidden    = (mode !== 'sum');
+  });
+});
+
+document.getElementById('roll-btn').addEventListener('click', roll);
+
+// ---- init ----
+buildDice();
+</script>
+</body>
+</html>

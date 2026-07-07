@@ -1,0 +1,199 @@
+/* ============================================================
+   dice.css — Dice toy styles
+   ============================================================ */
+
+body {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  gap: 2rem;
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 5vw, 2.2rem);
+  font-weight: 600;
+  margin: 0;
+  text-align: center;
+}
+
+.back {
+  position: absolute;
+  top: 1.2rem;
+  left: 1.2rem;
+  font-size: 0.9rem;
+  --btn-accent: var(--peach);
+}
+
+/* --- the dice --- */
+.dice-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 1.2rem;
+  min-height: 110px;
+}
+
+.die {
+  --die-color: var(--peach);
+  width: 86px;
+  height: 86px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--die-color);
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--ink);
+  /* hard offset shadow follows the clipped shape, unlike box-shadow */
+  filter: drop-shadow(0 5px 0 rgba(63, 53, 58, 0.55));
+}
+
+/* d6: classic rounded square */
+.die[data-sides="6"] { border-radius: 20px; }
+
+/* d4: triangle — the number sits lower, in the wide part */
+.die[data-sides="4"] {
+  clip-path: polygon(50% 4%, 98% 96%, 2% 96%);
+}
+.die[data-sides="4"] span { transform: translateY(16px); }
+
+/* d8: diamond */
+.die[data-sides="8"] {
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+/* the tumble */
+.die.rolling { animation: tumble 0.45s ease-in-out infinite; }
+@keyframes tumble {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  25%  { transform: translate(-4px, -6px) rotate(-7deg); }
+  50%  { transform: translate(3px, 2px) rotate(5deg); }
+  75%  { transform: translate(-2px, -4px) rotate(-4deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .die.rolling { animation: none; }
+}
+
+#roll-btn {
+  font-size: 1.2rem;
+  padding: 0.85rem 2.4rem;
+  --btn-accent: var(--coral);
+  width: 100%;
+  max-width: 300px;
+  justify-content: center;
+}
+
+/* result line, fades in when the last die settles */
+.result {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 500;
+  text-align: center;
+  min-height: 2rem;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.result.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* --- panel controls --- */
+.field-label {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+  margin: 1.1rem 0 0.45rem;
+}
+.field-label:first-of-type { margin-top: 0; }
+
+/* segmented d4 / d6 / d8 picker */
+.seg { display: flex; gap: 0.4rem; }
+.seg button {
+  flex: 1;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  padding: 0.45rem 0;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.seg button:hover { border-color: var(--ink-soft); }
+.seg button.active {
+  background: var(--sky);
+  border-color: var(--ink);
+  color: var(--ink);
+  box-shadow: 0 2px 0 var(--ink);
+}
+
+/* − n + stepper */
+.stepper { display: flex; align-items: center; gap: 0.9rem; }
+.stepper button {
+  width: 34px;
+  height: 34px;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  background: var(--card);
+  color: var(--ink);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 0 var(--ink);
+}
+.stepper button:active { transform: translateY(2px); box-shadow: 0 0 0 var(--ink); }
+#count-label {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 500;
+  min-width: 1.2em;
+  text-align: center;
+}
+
+/* rig mode radios */
+.radio-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.92rem;
+  margin: 0.3rem 0;
+  cursor: pointer;
+  accent-color: var(--coral);
+}
+
+/* rig inputs */
+.rig-box { margin-top: 0.7rem; }
+.values-inputs { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.values-inputs input,
+#sum-input {
+  width: 58px;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  outline: none;
+}
+#sum-input { width: 90px; }
+.values-inputs input:focus,
+#sum-input:focus { border-color: var(--coral); }
+
+.hint {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  margin: 0.45rem 0 0;
+}

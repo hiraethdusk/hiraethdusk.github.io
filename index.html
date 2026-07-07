@@ -33,13 +33,16 @@
     <div class="books">
       <!-- ── Add a new toy: copy one <a class="book"> block ────────────
            href         → the folder path, e.g. /brackets/
-           --book-color → any accent from base.css:
-                          --gold  --peach  --coral  --rose  --sky  --sage
+           --book-color → one of the themable palette vars from base.css:
+                          --book-1 … --book-6
            --book-h     → optional height in px (default: 160px)
-           --book-depth → optional thickness in px (default: 32px)
+           --book-depth → optional thickness in px (default: 30px)
            ──────────────────────────────────────────────────────────── -->
-      <a class="book" href="/spinner/" style="--book-color: var(--coral);">
+      <a class="book" href="/spinner/" style="--book-color: var(--book-1);">
         <span class="book-title">SPINNER</span>
+      </a>
+      <a class="book" href="/dice/" style="--book-color: var(--book-2); --book-h: 172px;">
+        <span class="book-title">DICE</span>
       </a>
     </div>
     <div class="shelf-plank"></div>

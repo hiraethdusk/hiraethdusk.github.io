@@ -83,11 +83,11 @@
 
 /* individual book spine
    ── To add a new toy: paste one <a class="book"> block in index.html
-      and set --book-color to any accent from base.css.          ── */
+      and set --book-color to one of the --book-1…6 palette vars. ── */
 .book {
-  --book-color: var(--coral);
+  --book-color: var(--book-1);
   --book-h: 160px;
-  --book-depth: 32px; /* how far the page block extends back into the shelf */
+  --book-depth: 30px; /* thickness: how deep the page block on top is */
 
   position: relative;
   display: flex;
@@ -106,9 +106,10 @@
   text-decoration: none;
   flex-shrink: 0;
 
-  /* real 3D: the ::after pages face lives in the book's own 3D space */
+  /* real 3D: the ::after pages face lives in the book's own 3D space.
+     pivot at the bottom edge, so tipping keeps it resting on the shelf */
   transform-style: preserve-3d;
-  transform: rotateY(-7deg); /* resting: a sliver of the pages shows */
+  transform-origin: 50% 100%;
 
   /* binding crease on left, bottom cast shadow */
   box-shadow:
@@ -121,36 +122,36 @@
     box-shadow 0.38s ease;
 }
 
-/* the side face: the page block, drawn as fine paper lines,
-   rotated 90° so it extends back into the shelf */
+/* the top face: the page edges, folded 90° backwards from the top
+   edge — becomes visible as the book tips toward you */
 .book::after {
   content: "";
   position: absolute;
-  top: 2px;
-  bottom: 2px;
-  left: 100%;
-  width: var(--book-depth);
-  transform-origin: left center;
-  transform: rotateY(90deg);
+  bottom: 100%;
+  left: 1px;
+  right: 1px;
+  height: var(--book-depth);
+  transform-origin: center bottom;
+  transform: rotateX(90deg);
   background: repeating-linear-gradient(to right,
     #f2ede4 0px, #f2ede4 2px,
     #dcd4c6 2px, #dcd4c6 3px);
-  border-radius: 0 3px 3px 0;
+  border-radius: 2px 3px 0 0;
   pointer-events: none;
 }
 
-/* hover / focus: the book slides off the shelf toward you and
-   turns, revealing its pages */
+/* hover / focus: the book tips out of the shelf toward you,
+   like a finger pulling its top edge — pages show along the top */
 .book:hover,
 .book:focus-visible {
-  transform: translate3d(0, -10px, 46px) rotateY(-30deg);
+  transform: rotateX(-24deg);
   box-shadow:
     inset 8px 0 16px rgba(0, 0, 0, 0.22),
     inset 2px 0 0 rgba(255, 255, 255, 0.20),
-    10px 26px 40px rgba(63, 53, 58, 0.35);
+    0 22px 34px rgba(63, 53, 58, 0.35);
 }
 .book:active {
-  transform: translate3d(0, -4px, 24px) rotateY(-20deg);
+  transform: rotateX(-13deg);
 }
 
 .book:focus-visible {
@@ -163,7 +164,7 @@
   font-family: var(--font-display);
   font-size: 0.85rem;
   font-weight: 600;
-  color: rgba(63, 53, 58, 0.55);
+  color: var(--book-title-ink);
   letter-spacing: 0.10em;
   padding: 14px 0;
   overflow: hidden;
@@ -195,5 +196,5 @@
 
 @media (prefers-reduced-motion: reduce) {
   .book { transition: box-shadow 0.2s ease; }
-  .book:hover, .book:focus-visible, .book:active { transform: rotateY(-7deg); }
+  .book:hover, .book:focus-visible, .book:active { transform: none; }
 }

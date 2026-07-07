@@ -24,6 +24,17 @@
   /* the dusk gradient: cool sky up top → warm gold at the horizon */
   --dusk: linear-gradient(180deg, #a9cddb 0%, #f5cfa0 52%, #f7ab8a 80%, #f6bd94 100%);
 
+  /* book spine palette + title ink — night mode swaps these for
+     darker tones in themes.css. Books reference --book-1…6, never
+     the accents directly, so themes can restyle the shelf alone. */
+  --book-1: var(--coral);
+  --book-2: var(--sky);
+  --book-3: var(--sage);
+  --book-4: var(--gold);
+  --book-5: var(--rose);
+  --book-6: var(--peach);
+  --book-title-ink: rgba(63, 53, 58, 0.55);
+
   /* hero sun-glow + tagline colour — overridden per theme in themes.css */
   --hero-glow: radial-gradient(circle,
               rgba(255, 248, 230, 0.95) 0%,
@@ -115,4 +126,46 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .btn { transition: background 0.2s ease; }
   .btn:hover, .btn:active { transform: none; }
+}
+
+/* ============================================================
+   .toy-layout — shared page scaffold for every toy:
+   the gimmick (.stage) on the left, options (.panel) on the
+   right, so you can tweak settings without scrolling.
+   Stacks vertically on narrow screens.
+   ============================================================ */
+.toy-layout {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2.5rem;
+}
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.panel {
+  width: 300px;
+  flex-shrink: 0;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.3rem 1.3rem;
+}
+
+.panel-title {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  margin: 0 0 0.9rem;
+}
+
+@media (max-width: 880px) {
+  .toy-layout { flex-direction: column; align-items: center; gap: 1.5rem; }
+  .panel { width: 100%; max-width: 380px; }
 }

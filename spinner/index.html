@@ -18,27 +18,28 @@
 
   <h1>Spinner 🎡</h1>
 
-  <div class="wheel-wrap">
-    <canvas id="wheel" width="600" height="600"></canvas>
-    <div class="hub"></div>
-  </div>
+  <div class="toy-layout">
+    <div class="stage">
+      <div class="wheel-wrap">
+        <canvas id="wheel" width="600" height="600"></canvas>
+        <div class="hub"></div>
+      </div>
+      <button class="btn" id="spin-btn">Spin</button>
+      <div class="result" id="result"></div>
+    </div>
 
-  <div class="controls">
-    <button class="btn" id="spin-btn">Spin</button>
-    <div class="result" id="result"></div>
-
-    <details>
-      <summary>edit options</summary>
+    <aside class="panel">
+      <h2 class="panel-title">⚙ options</h2>
       <div class="edit-inner" id="edit-inner">
         <!-- rows injected by JS -->
       </div>
       <button class="adv-toggle" id="adv-btn" type="button">advanced ▸ slice sizes</button>
       <p class="adv-note">each number is a slice's share of the wheel (%) — sizes are how it looks and feels, the ⭐ still decides the winner.</p>
-      <div class="edit-actions" style="padding: 0 1.2rem 1rem;">
+      <div class="edit-actions">
         <button class="btn" id="add-btn" style="--btn-accent:var(--sage);">+ add option</button>
         <button class="btn" id="apply-btn" style="--btn-accent:var(--coral);">apply</button>
       </div>
-    </details>
+    </aside>
   </div>
 
 <script>

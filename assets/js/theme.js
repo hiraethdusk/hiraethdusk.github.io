@@ -9,7 +9,7 @@
 // ============================================================
 (function () {
   const THEMES = [
-    { id: 'base',  icon: '🌇' },
+    { id: 'dusk',  icon: '🌇' },
     { id: 'night', icon: '🌙' },
     { id: 'dawn',  icon: '⛅' },
   ];

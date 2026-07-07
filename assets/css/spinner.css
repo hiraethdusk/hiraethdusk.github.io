@@ -70,14 +70,9 @@ canvas {
   z-index: 5;
 }
 
-/* --- controls below the wheel --- */
-.controls {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  width: 100%;
-  max-width: 380px;
+/* the stage matches the wheel width so the spin button lines up */
+.stage {
+  width: min(380px, 90vw);
 }
 
 #spin-btn {
@@ -104,28 +99,8 @@ canvas {
   transform: translateY(0);
 }
 
-/* --- edit panel --- */
-details {
-  width: 100%;
-  max-width: 380px;
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-summary {
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  padding: 0.8rem 1.2rem;
-  cursor: pointer;
-  list-style: none;
-  color: var(--ink-soft);
-}
-summary::-webkit-details-marker { display: none; }
-summary::before { content: "⚙ "; }
-
+/* --- edit panel (lives in the shared .panel on the right) --- */
 .edit-inner {
-  padding: 0.4rem 1.2rem 1.2rem;
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
@@ -172,7 +147,7 @@ summary::before { content: "⚙ "; }
   font-size: 0.85rem;
   color: var(--ink-soft);
   cursor: pointer;
-  padding: 0 1.2rem 0.6rem;
+  padding: 0.7rem 0 0;
   text-align: left;
   display: block;
 }
@@ -181,7 +156,7 @@ summary::before { content: "⚙ "; }
 .adv-note {
   display: none;
   margin: 0;
-  padding: 0 1.2rem 0.8rem;
+  padding: 0.4rem 0 0;
   font-size: 0.8rem;
   color: var(--ink-soft);
 }
@@ -206,6 +181,6 @@ summary::before { content: "⚙ "; }
 .edit-actions {
   display: flex;
   gap: 0.5rem;
-  margin-top: 0.4rem;
+  margin-top: 0.9rem;
 }
 .edit-actions .btn { flex: 1; justify-content: center; font-size: 0.9rem; padding: 0.55rem 1rem; }
