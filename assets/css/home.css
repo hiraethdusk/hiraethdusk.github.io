@@ -22,10 +22,7 @@
   width: 360px;
   height: 360px;
   border-radius: 50%;
-  background: radial-gradient(circle,
-              rgba(255, 248, 230, 0.95) 0%,
-              rgba(250, 205, 150, 0.55) 42%,
-              rgba(250, 205, 150, 0) 70%);
+  background: var(--hero-glow);
 }
 
 .sky-inner { position: relative; z-index: 1; }
@@ -42,7 +39,7 @@
 .tagline {
   margin: 0.5rem 0 0;
   font-size: clamp(1rem, 3.6vw, 1.2rem);
-  color: #6b5a52;
+  color: var(--tagline-ink);
 }
 
 /* --- the shelf --- */
@@ -62,14 +59,13 @@
 }
 
 /* books row: spines sit side by side, bottom-aligned on the plank.
-   perspective makes the scale on hover read as depth, not just size. */
+   perspective + preserve-3d make each book a real 3D object. */
 .books {
   display: flex;
   align-items: flex-end;
-  gap: 12px; /* wide enough that the pages strip doesn't crowd the next book */
+  gap: 12px;
   padding: 0 14px;
-  perspective: 700px;
-  perspective-origin: 50% 120%;
+  perspective: 900px;
 }
 
 /* the wooden shelf plank */
@@ -91,6 +87,7 @@
 .book {
   --book-color: var(--coral);
   --book-h: 160px;
+  --book-depth: 32px; /* how far the page block extends back into the shelf */
 
   position: relative;
   display: flex;
@@ -98,10 +95,20 @@
   justify-content: center;
   width: 60px;
   height: var(--book-h);
-  background: var(--book-color);
-  border-radius: 2px 5px 5px 2px;
+  /* sheen layered over the spine colour */
+  background:
+    linear-gradient(to bottom,
+      rgba(255, 255, 255, 0.16) 0%,
+      transparent 30%,
+      rgba(0, 0, 0, 0.10) 100%),
+    var(--book-color);
+  border-radius: 2px 4px 4px 2px;
   text-decoration: none;
   flex-shrink: 0;
+
+  /* real 3D: the ::after pages face lives in the book's own 3D space */
+  transform-style: preserve-3d;
+  transform: rotateY(-7deg); /* resting: a sliver of the pages shows */
 
   /* binding crease on left, bottom cast shadow */
   box-shadow:
@@ -110,49 +117,40 @@
     2px 4px 12px rgba(63, 53, 58, 0.18);
 
   transition:
-    transform 0.32s var(--spring),
-    box-shadow 0.32s ease;
+    transform 0.38s var(--spring),
+    box-shadow 0.38s ease;
 }
 
-/* top-highlight + bottom-shadow gradient baked onto the spine face */
-.book::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(to bottom,
-    rgba(255, 255, 255, 0.16) 0%,
-    transparent 30%,
-    rgba(0, 0, 0, 0.10) 100%);
-  pointer-events: none;
-  z-index: 1;
-}
-
-/* pages strip — gives the book visible thickness */
+/* the side face: the page block, drawn as fine paper lines,
+   rotated 90° so it extends back into the shelf */
 .book::after {
   content: "";
   position: absolute;
-  top: 3px;
-  right: -9px;
-  bottom: 3px;
-  width: 9px;
-  background: linear-gradient(to right,
-    #c8bfb4 0%,
-    #ddd6cc 30%,
-    #ede8e2 70%,
-    #f5f1ec 100%);
-  border-radius: 0 2px 2px 0;
+  top: 2px;
+  bottom: 2px;
+  left: 100%;
+  width: var(--book-depth);
+  transform-origin: left center;
+  transform: rotateY(90deg);
+  background: repeating-linear-gradient(to right,
+    #f2ede4 0px, #f2ede4 2px,
+    #dcd4c6 2px, #dcd4c6 3px);
+  border-radius: 0 3px 3px 0;
   pointer-events: none;
 }
 
-/* hover: slides up and toward the viewer, shadow deepens */
+/* hover / focus: the book slides off the shelf toward you and
+   turns, revealing its pages */
 .book:hover,
 .book:focus-visible {
-  transform: translateY(-14px) scale(1.08);
+  transform: translate3d(0, -10px, 46px) rotateY(-30deg);
   box-shadow:
     inset 8px 0 16px rgba(0, 0, 0, 0.22),
     inset 2px 0 0 rgba(255, 255, 255, 0.20),
-    6px 22px 38px rgba(63, 53, 58, 0.36);
+    10px 26px 40px rgba(63, 53, 58, 0.35);
+}
+.book:active {
+  transform: translate3d(0, -4px, 24px) rotateY(-20deg);
 }
 
 .book:focus-visible {
@@ -197,5 +195,5 @@
 
 @media (prefers-reduced-motion: reduce) {
   .book { transition: box-shadow 0.2s ease; }
-  .book:hover, .book:focus-visible { transform: none; }
+  .book:hover, .book:focus-visible, .book:active { transform: rotateY(-7deg); }
 }

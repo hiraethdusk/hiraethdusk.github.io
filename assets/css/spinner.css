@@ -149,6 +149,44 @@ summary::before { content: "⚙ "; }
 }
 .edit-row input[type="text"]:focus { border-color: var(--coral); }
 
+/* slice-share (%) input — hidden until 'advanced' is toggled */
+.edit-row .pct {
+  display: none;
+  width: 74px;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  outline: none;
+}
+.edit-inner.show-adv .pct { display: block; }
+.edit-row .pct:focus { border-color: var(--sky); }
+
+.adv-toggle {
+  background: none;
+  border: none;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  cursor: pointer;
+  padding: 0 1.2rem 0.6rem;
+  text-align: left;
+  display: block;
+}
+.adv-toggle:hover { color: var(--ink); }
+
+.adv-note {
+  display: none;
+  margin: 0;
+  padding: 0 1.2rem 0.8rem;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+#edit-inner.show-adv ~ .adv-note { display: block; }
+
 /* star button — marks the forced winner.
    hidden on non-winner rows; fades in on hover as a click hint. */
 .star-btn {

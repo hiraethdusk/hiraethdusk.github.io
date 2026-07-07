@@ -11,9 +11,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
 
-  <!-- shared foundations, then this page's styles -->
+  <!-- shared foundations, themes, then this page's styles -->
   <link rel="stylesheet" href="/assets/css/base.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
   <link rel="stylesheet" href="/assets/css/home.css" />
+  <script src="/assets/js/theme.js"></script>
 </head>
 <body>
 
@@ -34,6 +36,7 @@
            --book-color → any accent from base.css:
                           --gold  --peach  --coral  --rose  --sky  --sage
            --book-h     → optional height in px (default: 160px)
+           --book-depth → optional thickness in px (default: 32px)
            ──────────────────────────────────────────────────────────── -->
       <a class="book" href="/spinner/" style="--book-color: var(--coral);">
         <span class="book-title">SPINNER</span>

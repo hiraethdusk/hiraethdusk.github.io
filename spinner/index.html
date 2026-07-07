@@ -8,7 +8,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/assets/css/base.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
   <link rel="stylesheet" href="/assets/css/spinner.css" />
+  <script src="/assets/js/theme.js"></script>
 </head>
 <body>
 
@@ -30,6 +32,8 @@
       <div class="edit-inner" id="edit-inner">
         <!-- rows injected by JS -->
       </div>
+      <button class="adv-toggle" id="adv-btn" type="button">advanced ▸ slice sizes</button>
+      <p class="adv-note">each number is a slice's share of the wheel (%) — sizes are how it looks and feels, the ⭐ still decides the winner.</p>
       <div class="edit-actions" style="padding: 0 1.2rem 1rem;">
         <button class="btn" id="add-btn" style="--btn-accent:var(--sage);">+ add option</button>
         <button class="btn" id="apply-btn" style="--btn-accent:var(--coral);">apply</button>
@@ -40,11 +44,12 @@
 <script>
 // ============================================================
 //  How the winner is forced
-//  The wheel draws equal slices and spins with real deceleration
-//  — it looks fair. Before the animation starts we compute what
-//  final rotation puts the pointer inside the winner's slice,
-//  then pick a total spin that lands there. A random offset
-//  within the slice means it never stops at exactly the centre.
+//  The wheel draws slices sized by their weights and spins with
+//  real deceleration — it looks fair. Before the animation
+//  starts we compute what final rotation puts the pointer inside
+//  the winner's slice, then pick a total spin that lands there.
+//  A random offset within the slice means it never stops at
+//  exactly the centre.
 // ============================================================
 
 const canvas = document.getElementById('wheel');
@@ -65,6 +70,7 @@ const SLICE_COLOURS = [
 
 // ---- state ----
 let options   = ['Pizza', 'Tacos', 'Sushi', 'Burgers', 'Pasta'];
+let weights   = options.map(() => 20); // each slice's share; normalised wherever used
 let winnerIdx = 0;      // index of the option that always wins
 let rotation  = 0;      // current wheel rotation in radians
 let spinning  = false;
@@ -73,11 +79,14 @@ let spinning  = false;
 function drawWheel(rot) {
   ctx.clearRect(0, 0, W, W);
   const n     = options.length;
-  const slice = (2 * Math.PI) / n;
+  const total = weights.reduce((s, w) => s + w, 0);
+  let angle   = rot - Math.PI / 2;
 
   options.forEach((label, i) => {
-    const start = rot + i * slice - Math.PI / 2;
-    const end   = start + slice;
+    const sliceAngle = (2 * Math.PI) * weights[i] / total;
+    const start = angle;
+    const end   = angle + sliceAngle;
+    angle = end;
 
     // slice fill
     ctx.beginPath();
@@ -95,7 +104,7 @@ function drawWheel(rot) {
     // label
     ctx.save();
     ctx.translate(CX, CY);
-    ctx.rotate(start + slice / 2);
+    ctx.rotate(start + sliceAngle / 2);
     ctx.textAlign    = 'right';
     ctx.textBaseline = 'middle';
     ctx.fillStyle    = '#3f353a';
@@ -107,14 +116,15 @@ function drawWheel(rot) {
 
 // ---- spin math ----
 // The pointer sits at the top (−π/2 from 0 radians in canvas coords).
-// Slice i occupies angles [i*slice, (i+1)*slice] relative to rotation.
-// A random offset within the middle 60% of the slice means the wheel
-// never stops at exactly the centre — it lands somewhere believably off.
+// Slices are laid out clockwise by weight, so the winner's slice spans
+// [before, before + w] as a fraction of the total. We aim for a random
+// point in the middle 60% of that span, so the wheel never stops at
+// exactly the centre — it lands somewhere believably off.
 function getSpin() {
-  const n      = options.length;
-  const slice  = (2 * Math.PI) / n;
-  const jitter = (Math.random() - 0.5) * 0.6; // random offset: ±30% of a slice
-  const target = -(winnerIdx + 0.5 + jitter) * slice;
+  const total  = weights.reduce((s, w) => s + w, 0);
+  const before = weights.slice(0, winnerIdx).reduce((s, w) => s + w, 0);
+  const f      = 0.2 + Math.random() * 0.6; // fraction within the winning slice
+  const target = -(2 * Math.PI) * (before + f * weights[winnerIdx]) / total;
   const cur    = ((rotation % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
   const tNorm  = ((target % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
   let delta = tNorm - cur;
@@ -163,6 +173,7 @@ document.getElementById('spin-btn').addEventListener('click', spin);
 // ---- edit panel ----
 function buildEditRows() {
   const container = document.getElementById('edit-inner');
+  const total = weights.reduce((s, w) => s + w, 0);
   container.innerHTML = '';
   options.forEach((opt, i) => {
     const row = document.createElement('div');
@@ -171,13 +182,20 @@ function buildEditRows() {
     const input = document.createElement('input');
     input.type  = 'text';
     input.value = opt;
-    input.dataset.idx = i;
+
+    // slice share (%), only visible when advanced is open
+    const pct = document.createElement('input');
+    pct.type      = 'number';
+    pct.className = 'pct';
+    pct.min       = '0.5';
+    pct.step      = '0.5';
+    pct.value     = Math.round(weights[i] / total * 1000) / 10;
+    pct.title     = 'share of the wheel (%)';
 
     const star = document.createElement('button');
     star.className = 'star-btn' + (i === winnerIdx ? ' winner' : '');
     star.textContent = '⭐';
     star.title = 'set as winner';
-    star.dataset.idx = i;
     star.addEventListener('click', () => {
       winnerIdx = i;
       container.querySelectorAll('.star-btn').forEach((b, j) => {
@@ -186,20 +204,37 @@ function buildEditRows() {
     });
 
     row.appendChild(input);
+    row.appendChild(pct);
     row.appendChild(star);
     container.appendChild(row);
   });
 }
 
+// the advanced toggle reveals the per-slice % inputs
+document.getElementById('adv-btn').addEventListener('click', () => {
+  const open = document.getElementById('edit-inner').classList.toggle('show-adv');
+  document.getElementById('adv-btn').textContent =
+    open ? 'advanced ▾ slice sizes' : 'advanced ▸ slice sizes';
+});
+
 document.getElementById('add-btn').addEventListener('click', () => {
   options.push('Option ' + (options.length + 1));
+  // new slice gets the average share, so the wheel stays balanced
+  weights.push(weights.reduce((s, w) => s + w, 0) / weights.length);
   buildEditRows();
 });
 
 document.getElementById('apply-btn').addEventListener('click', () => {
-  const inputs = document.getElementById('edit-inner').querySelectorAll('input[type="text"]');
-  options = Array.from(inputs).map(inp => inp.value.trim() || '?');
+  const rows = document.querySelectorAll('#edit-inner .edit-row');
+  options = [];
+  weights = [];
+  rows.forEach(row => {
+    options.push(row.querySelector('input[type="text"]').value.trim() || '?');
+    const v = parseFloat(row.querySelector('.pct').value);
+    weights.push(isFinite(v) && v > 0 ? v : 100 / rows.length);
+  });
   if (winnerIdx >= options.length) winnerIdx = 0;
+  buildEditRows(); // re-render so the % column shows normalised values
   drawWheel(rotation);
   document.getElementById('result').classList.remove('show');
 });
