@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dice · hiraethdusk</title>
+  <title>dice · hiraethdusk</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
@@ -11,24 +11,26 @@
   <link rel="stylesheet" href="/assets/css/themes.css" />
   <link rel="stylesheet" href="/assets/css/dice.css" />
   <script src="/assets/js/theme.js"></script>
+  <script src="/assets/js/panel.js" defer></script>
 </head>
 <body>
 
   <a class="btn back" href="/">← back</a>
 
-  <h1>Dice 🎲</h1>
+  <h1>dice 🎲</h1>
 
   <div class="toy-layout">
     <div class="stage">
       <div class="dice-row" id="dice-row">
         <!-- dice injected by JS -->
       </div>
-      <button class="btn" id="roll-btn">Roll</button>
+      <button class="btn" id="roll-btn">roll</button>
       <div class="result" id="result"></div>
     </div>
 
     <aside class="panel">
-      <h2 class="panel-title">⚙ options</h2>
+      <button class="panel-title" type="button">⚙ options</button>
+      <div class="panel-body">
 
       <p class="field-label">sides</p>
       <div class="seg" id="sides-seg">
@@ -53,11 +55,15 @@
           <!-- per-die inputs injected by JS -->
         </div>
         <p class="hint">leave a die blank for an honest roll.</p>
+        <p class="error" id="values-error" hidden></p>
       </div>
 
       <div id="sum-box" class="rig-box" hidden>
         <input type="number" id="sum-input" />
         <p class="hint" id="sum-hint"></p>
+        <p class="error" id="sum-error" hidden></p>
+      </div>
+
       </div>
     </aside>
   </div>
@@ -116,23 +122,62 @@ function buildDice() {
   sumInput.max = String(count * sides);
   sumInput.placeholder = String(Math.round(count * (sides + 1) / 2));
   sumHint.textContent = 'between ' + count + ' and ' + (count * sides) + '.';
+
+  // stale errors don't apply to the new dice
+  sumInput.classList.remove('invalid');
+  document.getElementById('values-error').hidden = true;
+  document.getElementById('sum-error').hidden    = true;
+}
+
+// ---- validation: bad rig inputs block the roll ----
+function showErrors() {
+  const valuesError = document.getElementById('values-error');
+  const sumError    = document.getElementById('sum-error');
+  valuesError.hidden = true;
+  sumError.hidden    = true;
+  let bad = false;
+
+  if (mode === 'values') {
+    valuesInputs.querySelectorAll('input').forEach(inp => {
+      inp.classList.remove('invalid');
+      if (inp.value === '') return; // blank = honest roll, always fine
+      const v = parseInt(inp.value, 10);
+      if (!(v >= 1 && v <= sides)) { inp.classList.add('invalid'); bad = true; }
+    });
+    if (bad) {
+      valuesError.textContent = 'each value must be 1–' + sides + '.';
+      valuesError.hidden = false;
+    }
+  } else {
+    sumInput.classList.remove('invalid');
+    if (sumInput.value !== '') {
+      const s = parseInt(sumInput.value, 10);
+      if (!(s >= count && s <= count * sides)) {
+        sumInput.classList.add('invalid');
+        sumError.textContent = 'sum must be between ' + count + ' and ' + (count * sides) + '.';
+        sumError.hidden = false;
+        bad = true;
+      }
+    }
+  }
+  return bad;
 }
 
 // ---- decide the final faces before the roll starts ----
+// (inputs are already validated, so no clamping needed here)
 function targetValues() {
   if (mode === 'values') {
     return Array.from(valuesInputs.querySelectorAll('input')).map(inp => {
       const v = parseInt(inp.value, 10);
-      // blank or out-of-range → an honest random roll for that die
+      // blank → an honest random roll for that die
       return (v >= 1 && v <= sides) ? v : 1 + Math.floor(Math.random() * sides);
     });
   }
 
-  // sum mode: clamp to what's possible, then hand out the excess
+  // sum mode: start every die at 1, then hand out the excess
   // one pip at a time to random dice that still have room
   let target = parseInt(sumInput.value, 10);
   if (!isFinite(target)) target = Math.round(count * (sides + 1) / 2);
-  target = Math.min(count * sides, Math.max(count, target));
 
   const vals = new Array(count).fill(1);
   let rest = target - count;
@@ -146,6 +191,7 @@ function targetValues() {
 // ---- the roll ----
 function roll() {
   if (rolling) return;
+  if (showErrors()) return;
   rolling = true;
   resultEl.classList.remove('show');
   resultEl.textContent = '';

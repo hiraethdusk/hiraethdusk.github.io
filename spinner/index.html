@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Spinner · hiraethdusk</title>
+  <title>spinner · hiraethdusk</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
@@ -11,12 +11,13 @@
   <link rel="stylesheet" href="/assets/css/themes.css" />
   <link rel="stylesheet" href="/assets/css/spinner.css" />
   <script src="/assets/js/theme.js"></script>
+  <script src="/assets/js/panel.js" defer></script>
 </head>
 <body>
 
   <a class="btn back" href="/">← back</a>
 
-  <h1>Spinner 🎡</h1>
+  <h1>spinner 🎡</h1>
 
   <div class="toy-layout">
     <div class="stage">
@@ -24,20 +25,23 @@
         <canvas id="wheel" width="600" height="600"></canvas>
         <div class="hub"></div>
       </div>
-      <button class="btn" id="spin-btn">Spin</button>
+      <button class="btn" id="spin-btn">spin</button>
       <div class="result" id="result"></div>
     </div>
 
     <aside class="panel">
-      <h2 class="panel-title">⚙ options</h2>
-      <div class="edit-inner" id="edit-inner">
-        <!-- rows injected by JS -->
-      </div>
-      <button class="adv-toggle" id="adv-btn" type="button">advanced ▸ slice sizes</button>
-      <p class="adv-note">each number is a slice's share of the wheel (%) — sizes are how it looks and feels, the ⭐ still decides the winner.</p>
-      <div class="edit-actions">
-        <button class="btn" id="add-btn" style="--btn-accent:var(--sage);">+ add option</button>
-        <button class="btn" id="apply-btn" style="--btn-accent:var(--coral);">apply</button>
+      <button class="panel-title" type="button">⚙ options</button>
+      <div class="panel-body">
+        <div class="edit-inner" id="edit-inner">
+          <!-- rows injected by JS -->
+        </div>
+        <p class="hint">tap ⭐ to pick the winner — tap it again for a fair spin.</p>
+        <button class="adv-toggle" id="adv-btn" type="button">advanced ▸ slice sizes</button>
+        <p class="adv-note">each number is a slice's share of the wheel (%) — with no ⭐ set, bigger slices really do win more often.</p>
+        <div class="edit-actions">
+          <button class="btn" id="add-btn" style="--btn-accent:var(--sage);">+ add option</button>
+          <button class="btn" id="apply-btn" style="--btn-accent:var(--coral);">apply</button>
+        </div>
       </div>
     </aside>
   </div>
@@ -72,7 +76,7 @@ const SLICE_COLOURS = [
 // ---- state ----
 let options   = ['Pizza', 'Tacos', 'Sushi', 'Burgers', 'Pasta'];
 let weights   = options.map(() => 20); // each slice's share; normalised wherever used
-let winnerIdx = 0;      // index of the option that always wins
+let winnerIdx = 0;      // option that always wins; null = fair spin
 let rotation  = 0;      // current wheel rotation in radians
 let spinning  = false;
 
@@ -122,6 +126,14 @@ function drawWheel(rot) {
 // point in the middle 60% of that span, so the wheel never stops at
 // exactly the centre — it lands somewhere believably off.
 function getSpin() {
+  const revs = 5 + Math.floor(Math.random() * 4);
+
+  // no winner set: a genuinely fair spin — any angle is equally likely,
+  // so each slice's chance is exactly its share of the wheel
+  if (winnerIdx === null) {
+    return Math.random() * 2 * Math.PI + revs * 2 * Math.PI;
+  }
+
   const total  = weights.reduce((s, w) => s + w, 0);
   const before = weights.slice(0, winnerIdx).reduce((s, w) => s + w, 0);
   const f      = 0.2 + Math.random() * 0.6; // fraction within the winning slice
@@ -130,8 +142,19 @@ function getSpin() {
   const tNorm  = ((target % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
   let delta = tNorm - cur;
   if (delta < 0) delta += 2 * Math.PI;
-  const revs = 5 + Math.floor(Math.random() * 4);
   return delta + revs * 2 * Math.PI;
+}
+
+// which slice is under the pointer for the current rotation
+function landedIndex() {
+  const total = weights.reduce((s, w) => s + w, 0);
+  const a = (((-rotation) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+  let cum = 0;
+  for (let i = 0; i < weights.length; i++) {
+    cum += (2 * Math.PI) * weights[i] / total;
+    if (a < cum) return i;
+  }
+  return weights.length - 1;
 }
 
 // ---- animation ----
@@ -162,7 +185,7 @@ function spin() {
       requestAnimationFrame(frame);
     } else {
       spinning = false;
-      resultEl.textContent = '🎉 ' + options[winnerIdx] + '!';
+      resultEl.textContent = '🎉 ' + options[landedIndex()] + '!';
       resultEl.classList.add('show');
     }
   }
@@ -196,11 +219,12 @@ function buildEditRows() {
     const star = document.createElement('button');
     star.className = 'star-btn' + (i === winnerIdx ? ' winner' : '');
     star.textContent = '⭐';
-    star.title = 'set as winner';
+    star.title = 'set as winner (tap again for a fair spin)';
     star.addEventListener('click', () => {
-      winnerIdx = i;
+      // tapping the current winner un-rigs the wheel
+      winnerIdx = (winnerIdx === i) ? null : i;
       container.querySelectorAll('.star-btn').forEach((b, j) => {
-        b.classList.toggle('winner', j === i);
+        b.classList.toggle('winner', j === winnerIdx);
       });
     });
 
@@ -219,7 +243,7 @@ document.getElementById('adv-btn').addEventListener('click', () => {
 });
 
 document.getElementById('add-btn').addEventListener('click', () => {
-  options.push('Option ' + (options.length + 1));
+  options.push('option ' + (options.length + 1));
   // new slice gets the average share, so the wheel stays balanced
   weights.push(weights.reduce((s, w) => s + w, 0) / weights.length);
   buildEditRows();
@@ -234,7 +258,7 @@ document.getElementById('apply-btn').addEventListener('click', () => {
     const v = parseFloat(row.querySelector('.pct').value);
     weights.push(isFinite(v) && v > 0 ? v : 100 / rows.length);
   });
-  if (winnerIdx >= options.length) winnerIdx = 0;
+  if (winnerIdx !== null && winnerIdx >= options.length) winnerIdx = null;
   buildEditRows(); // re-render so the % column shows normalised values
   drawWheel(rotation);
   document.getElementById('result').classList.remove('show');

@@ -137,7 +137,9 @@
     #f2ede4 0px, #f2ede4 2px,
     #dcd4c6 2px, #dcd4c6 3px);
   border-radius: 2px 3px 0 0;
-  pointer-events: none;
+  /* the pages count as part of the book's hitbox — otherwise hover
+     flickers when the tipping book moves out from under the cursor */
+  pointer-events: auto;
 }
 
 /* hover / focus: the book tips out of the shelf toward you,

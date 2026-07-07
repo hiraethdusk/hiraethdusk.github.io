@@ -28,14 +28,14 @@
   --shadow:      0 10px 30px rgba(0, 0, 0, 0.45);
   --shadow-lift: 0 18px 42px rgba(0, 0, 0, 0.55);
 
-  /* books go dark blue-grey after dark */
+  /* books go dark blue-grey after dark, titles light */
   --book-1: #3e4a66;
   --book-2: #37424f;
   --book-3: #46536b;
   --book-4: #515d74;
   --book-5: #443f55;
   --book-6: #3a4658;
-  --book-title-ink: rgba(238, 232, 240, 0.60);
+  --book-title-ink: rgba(244, 240, 246, 0.85);
 }
 
 /* --- dawn: bright, spirited, light blue --- */
@@ -57,6 +57,16 @@
 
   --shadow:      0 10px 30px rgba(39, 73, 92, 0.12);
   --shadow-lift: 0 18px 42px rgba(70, 176, 216, 0.30);
+
+  /* bright, distinct book spines (--coral override would make
+     --book-1 and --book-2 near-identical blues otherwise) */
+  --book-1: #f79b57;
+  --book-2: #46b0d8;
+  --book-3: #63c48e;
+  --book-4: #ffd166;
+  --book-5: #f28fb2;
+  --book-6: #57c7b8;
+  --book-title-ink: rgba(38, 66, 82, 0.60);
 }
 
 /* ============================================================

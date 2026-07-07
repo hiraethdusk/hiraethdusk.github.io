@@ -140,6 +140,12 @@ canvas {
 .edit-inner.show-adv .pct { display: block; }
 .edit-row .pct:focus { border-color: var(--sky); }
 
+.hint {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  margin: 0.5rem 0 0;
+}
+
 .adv-toggle {
   background: none;
   border: none;
