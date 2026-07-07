@@ -122,6 +122,22 @@
     box-shadow 0.38s ease;
 }
 
+/* pages on the right side — always-visible thickness */
+.book::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  right: -9px;
+  bottom: 3px;
+  width: 9px;
+  background: linear-gradient(to right,
+    #c8bfb4 0%,
+    #ddd6cc 30%,
+    #ede8e2 70%,
+    #f5f1ec 100%);
+  border-radius: 0 2px 2px 0;
+}
+
 /* the top face: the page edges, folded 90° backwards from the top
    edge — becomes visible as the book tips toward you */
 .book::after {

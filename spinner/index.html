@@ -35,12 +35,11 @@
         <div class="edit-inner" id="edit-inner">
           <!-- rows injected by JS -->
         </div>
-        <p class="hint">tap ⭐ to pick the winner — tap it again for a fair spin.</p>
+        <p class="hint">changes apply instantly. tap ⭐ to pick the winner — tap it again for a fair spin.</p>
         <button class="adv-toggle" id="adv-btn" type="button">advanced ▸ slice sizes</button>
-        <p class="adv-note">each number is a slice's share of the wheel (%) — with no ⭐ set, bigger slices really do win more often.</p>
+        <p class="adv-note">shares are relative — they don't need to add up to 100. with no ⭐ set, bigger shares really do win more often.</p>
         <div class="edit-actions">
           <button class="btn" id="add-btn" style="--btn-accent:var(--sage);">+ add option</button>
-          <button class="btn" id="apply-btn" style="--btn-accent:var(--coral);">apply</button>
         </div>
       </div>
     </aside>
@@ -80,15 +79,26 @@ let winnerIdx = 0;      // option that always wins; null = fair spin
 let rotation  = 0;      // current wheel rotation in radians
 let spinning  = false;
 
+// weights are relative shares — they don't need to add up to 100.
+// this cleans them for the maths: blanks/zeros drop out, and if
+// everything is blank the wheel falls back to equal slices.
+function effWeights() {
+  const w = weights.map(v => (isFinite(v) && v > 0) ? v : 0);
+  const total = w.reduce((s, x) => s + x, 0);
+  if (total === 0) return options.map(() => 1);
+  return w;
+}
+
 // ---- draw ----
 function drawWheel(rot) {
   ctx.clearRect(0, 0, W, W);
   const n     = options.length;
-  const total = weights.reduce((s, w) => s + w, 0);
+  const w     = effWeights();
+  const total = w.reduce((s, x) => s + x, 0);
   let angle   = rot - Math.PI / 2;
 
   options.forEach((label, i) => {
-    const sliceAngle = (2 * Math.PI) * weights[i] / total;
+    const sliceAngle = (2 * Math.PI) * w[i] / total;
     const start = angle;
     const end   = angle + sliceAngle;
     angle = end;
@@ -134,10 +144,11 @@ function getSpin() {
     return Math.random() * 2 * Math.PI + revs * 2 * Math.PI;
   }
 
-  const total  = weights.reduce((s, w) => s + w, 0);
-  const before = weights.slice(0, winnerIdx).reduce((s, w) => s + w, 0);
+  const w      = effWeights();
+  const total  = w.reduce((s, x) => s + x, 0);
+  const before = w.slice(0, winnerIdx).reduce((s, x) => s + x, 0);
   const f      = 0.2 + Math.random() * 0.6; // fraction within the winning slice
-  const target = -(2 * Math.PI) * (before + f * weights[winnerIdx]) / total;
+  const target = -(2 * Math.PI) * (before + f * w[winnerIdx]) / total;
   const cur    = ((rotation % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
   const tNorm  = ((target % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
   let delta = tNorm - cur;
@@ -147,14 +158,15 @@ function getSpin() {
 
 // which slice is under the pointer for the current rotation
 function landedIndex() {
-  const total = weights.reduce((s, w) => s + w, 0);
+  const w = effWeights();
+  const total = w.reduce((s, x) => s + x, 0);
   const a = (((-rotation) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
   let cum = 0;
-  for (let i = 0; i < weights.length; i++) {
-    cum += (2 * Math.PI) * weights[i] / total;
+  for (let i = 0; i < w.length; i++) {
+    cum += (2 * Math.PI) * w[i] / total;
     if (a < cum) return i;
   }
-  return weights.length - 1;
+  return w.length - 1;
 }
 
 // ---- animation ----
@@ -195,26 +207,59 @@ function spin() {
 document.getElementById('spin-btn').addEventListener('click', spin);
 
 // ---- edit panel ----
+// Every input writes straight into options/weights and redraws the
+// wheel — no apply button. Rows are only rebuilt when one is added
+// or removed, and since state is always current, nothing is lost.
 function buildEditRows() {
   const container = document.getElementById('edit-inner');
-  const total = weights.reduce((s, w) => s + w, 0);
   container.innerHTML = '';
   options.forEach((opt, i) => {
     const row = document.createElement('div');
     row.className = 'edit-row';
 
+    const wrap = document.createElement('span');
+    wrap.className = 'input-wrap';
+
     const input = document.createElement('input');
     input.type  = 'text';
     input.value = opt;
+    input.addEventListener('input', () => {
+      options[i] = input.value.trim();
+      drawWheel(rotation);
+    });
+    wrap.appendChild(input);
 
-    // slice share (%), only visible when advanced is open
+    // × in the corner, shown on hover — a wheel needs at least two slices
+    if (options.length > 2) {
+      const del = document.createElement('button');
+      del.className = 'del-btn';
+      del.type = 'button';
+      del.textContent = '×';
+      del.title = 'remove this option';
+      del.addEventListener('click', () => {
+        options.splice(i, 1);
+        weights.splice(i, 1);
+        if (winnerIdx === i) winnerIdx = null;
+        else if (winnerIdx !== null && winnerIdx > i) winnerIdx--;
+        buildEditRows();
+        drawWheel(rotation);
+      });
+      wrap.appendChild(del);
+    }
+
+    // slice share, only visible when advanced is open
     const pct = document.createElement('input');
     pct.type      = 'number';
     pct.className = 'pct';
-    pct.min       = '0.5';
+    pct.min       = '0';
     pct.step      = '0.5';
-    pct.value     = Math.round(weights[i] / total * 1000) / 10;
-    pct.title     = 'share of the wheel (%)';
+    pct.value     = Math.round(weights[i] * 100) / 100;
+    pct.title     = 'share of the wheel';
+    pct.addEventListener('input', () => {
+      const v = parseFloat(pct.value);
+      weights[i] = (isFinite(v) && v > 0) ? v : 0;
+      drawWheel(rotation);
+    });
 
     const star = document.createElement('button');
     star.className = 'star-btn' + (i === winnerIdx ? ' winner' : '');
@@ -228,14 +273,14 @@ function buildEditRows() {
       });
     });
 
-    row.appendChild(input);
+    row.appendChild(wrap);
     row.appendChild(pct);
     row.appendChild(star);
     container.appendChild(row);
   });
 }
 
-// the advanced toggle reveals the per-slice % inputs
+// the advanced toggle reveals the per-slice share inputs
 document.getElementById('adv-btn').addEventListener('click', () => {
   const open = document.getElementById('edit-inner').classList.toggle('show-adv');
   document.getElementById('adv-btn').textContent =
@@ -245,23 +290,9 @@ document.getElementById('adv-btn').addEventListener('click', () => {
 document.getElementById('add-btn').addEventListener('click', () => {
   options.push('option ' + (options.length + 1));
   // new slice gets the average share, so the wheel stays balanced
-  weights.push(weights.reduce((s, w) => s + w, 0) / weights.length);
+  weights.push(weights.reduce((s, w) => s + w, 0) / weights.length || 20);
   buildEditRows();
-});
-
-document.getElementById('apply-btn').addEventListener('click', () => {
-  const rows = document.querySelectorAll('#edit-inner .edit-row');
-  options = [];
-  weights = [];
-  rows.forEach(row => {
-    options.push(row.querySelector('input[type="text"]').value.trim() || '?');
-    const v = parseFloat(row.querySelector('.pct').value);
-    weights.push(isFinite(v) && v > 0 ? v : 100 / rows.length);
-  });
-  if (winnerIdx !== null && winnerIdx >= options.length) winnerIdx = null;
-  buildEditRows(); // re-render so the % column shows normalised values
   drawWheel(rotation);
-  document.getElementById('result').classList.remove('show');
 });
 
 // ---- init ----
