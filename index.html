@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>hiraethdusk</title>
   <meta name="description" content="little web toys, made slowly and on purpose." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext x='8' y='13' text-anchor='middle' font-size='13'%3E%F0%9F%8C%87%3C/text%3E%3C/svg%3E" />
 
   <!-- fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -32,18 +33,33 @@
 
     <div class="books">
       <!-- ── Add a new toy: copy one <a class="book"> block ────────────
-           href         → the folder path, e.g. /brackets/
-           --book-color → one of the themable palette vars from base.css:
-                          --book-1 … --book-6
-           --book-h     → optional height in px (default: 160px)
-           --book-depth → optional thickness in px (default: 30px)
+           href      → the folder path, e.g. /brackets/
+           --book-c  → spine colour: --book-1 … --book-6 (themable)
+           --book-h  → optional height in px (default: 160px)
+           --book-w  → optional spine width in px (default: 40px)
+           emblem    → the toy's emoji sticker
            ──────────────────────────────────────────────────────────── -->
-      <a class="book" href="/spinner/" style="--book-color: var(--book-1);">
-        <span class="book-title">spinner</span>
+      <a class="book" href="/spinner/" style="--book-c: var(--book-1); --book-h: 170px; --book-w: 44px;">
+        <span class="book-spine">
+          <span class="book-title">spinner</span>
+          <span class="book-emblem" aria-hidden="true">🎡</span>
+        </span>
       </a>
-      <a class="book" href="/dice/" style="--book-color: var(--book-2); --book-h: 172px;">
-        <span class="book-title">dice</span>
+      <a class="book" href="/dice/" style="--book-c: var(--book-2); --book-h: 152px; --book-w: 38px;">
+        <span class="book-spine">
+          <span class="book-title">dice</span>
+          <span class="book-emblem" aria-hidden="true">🎲</span>
+        </span>
       </a>
+
+      <span class="shelf-note">more soon…</span>
+
+      <div class="shelf-plant" aria-hidden="true">
+        <span class="plant-leaves">
+          <i class="leaf leaf-1"></i><i class="leaf leaf-2"></i><i class="leaf leaf-3"></i>
+        </span>
+        <span class="plant-pot"></span>
+      </div>
     </div>
     <div class="shelf-plank"></div>
   </main>

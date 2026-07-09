@@ -33,7 +33,11 @@
   --book-4: var(--gold);
   --book-5: var(--rose);
   --book-6: var(--peach);
-  --book-title-ink: rgba(63, 53, 58, 0.55);
+  --book-title-ink: rgba(63, 53, 58, 0.60);
+
+  /* shelf materials: the plank wood */
+  --plank:      #dca86e;
+  --plank-edge: #b17a42;
 
   /* hero sun-glow + tagline colour — overridden per theme in themes.css */
   --hero-glow: radial-gradient(circle,
@@ -128,59 +132,5 @@ body {
   .btn:hover, .btn:active { transform: none; }
 }
 
-/* ============================================================
-   .toy-layout — shared page scaffold for every toy:
-   the gimmick (.stage) on the left, options (.panel) on the
-   right, so you can tweak settings without scrolling.
-   Stacks vertically on narrow screens.
-   ============================================================ */
-.toy-layout {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 2.5rem;
-}
-
-.stage {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.panel {
-  width: 300px;
-  flex-shrink: 0;
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 1.1rem 1.3rem 1.3rem;
-}
-
-/* the title doubles as the hide/show toggle (panel.js) */
-.panel-title {
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: var(--ink-soft);
-  margin: 0 0 0.9rem;
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  display: block;
-  width: 100%;
-  text-align: left;
-}
-.panel-title:hover { color: var(--ink); }
-.panel-title::after { content: " ▾"; }
-
-.panel.collapsed { width: auto; }
-.panel.collapsed .panel-title { margin: 0; }
-.panel.collapsed .panel-title::after { content: " ▸"; }
-.panel.collapsed .panel-body { display: none; }
-
-@media (max-width: 880px) {
-  .toy-layout { flex-direction: column; align-items: center; gap: 1.5rem; }
-  .panel { width: 100%; max-width: 380px; }
-}
+/* The shared toy-page scaffold (.toy-layout, .panel, .back, .result)
+   lives in toy.css — link it after this file on every toy page. */
