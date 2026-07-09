@@ -1,0 +1,105 @@
+/* ============================================================
+   toy.css — shared page chrome for every toy page.
+   Link after base.css + themes.css, before the toy's own css:
+     base.css → themes.css → toy.css → <toy>.css
+   Covers the centered column layout, the back button, the
+   result line, and the stage/options-panel scaffold.
+   ============================================================ */
+
+body {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  gap: 2rem;
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 5vw, 2.2rem);
+  font-weight: 600;
+  margin: 0;
+  text-align: center;
+}
+
+.back {
+  position: absolute;
+  top: 1.2rem;
+  left: 1.2rem;
+  font-size: 0.9rem;
+  --btn-accent: var(--peach);
+}
+
+/* result line, fades in when the toy settles */
+.result {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 500;
+  text-align: center;
+  min-height: 2rem;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.result.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================================================
+   .toy-layout — the gimmick (.stage) on the left, options
+   (.panel) on the right, so you can tweak settings without
+   scrolling. Stacks vertically on narrow screens.
+   ============================================================ */
+.toy-layout {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2.5rem;
+}
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.panel {
+  width: 300px;
+  flex-shrink: 0;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.3rem 1.3rem;
+}
+
+/* the title doubles as the hide/show toggle (panel.js) */
+.panel-title {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  margin: 0 0 0.9rem;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+  width: 100%;
+  text-align: left;
+}
+.panel-title:hover { color: var(--ink); }
+.panel-title::after { content: " ▾"; }
+
+.panel.collapsed { width: auto; }
+.panel.collapsed .panel-title { margin: 0; }
+.panel.collapsed .panel-title::after { content: " ▸"; }
+.panel.collapsed .panel-body { display: none; }
+
+@media (max-width: 880px) {
+  .toy-layout { flex-direction: column; align-items: center; gap: 1.5rem; }
+  .panel { width: 100%; max-width: 380px; }
+}

@@ -36,6 +36,10 @@
   --book-5: #443f55;
   --book-6: #3a4658;
   --book-title-ink: rgba(244, 240, 246, 0.85);
+
+  /* the shelf wood dims with the room */
+  --plank:      #6d5544;
+  --plank-edge: #4a382a;
 }
 
 /* --- dawn: bright, spirited, light blue --- */
@@ -67,6 +71,10 @@
   --book-5: #f28fb2;
   --book-6: #57c7b8;
   --book-title-ink: rgba(38, 66, 82, 0.60);
+
+  /* pale morning birch */
+  --plank:      #e9c98f;
+  --plank-edge: #c29354;
 }
 
 /* ============================================================

@@ -1,32 +1,7 @@
 /* ============================================================
-   dice.css — Dice toy styles
+   dice.css — Dice toy styles.
+   Page chrome (layout, h1, .back, .result) comes from toy.css.
    ============================================================ */
-
-body {
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem 1rem;
-  gap: 2rem;
-}
-
-h1 {
-  font-family: var(--font-display);
-  font-size: clamp(1.6rem, 5vw, 2.2rem);
-  font-weight: 600;
-  margin: 0;
-  text-align: center;
-}
-
-.back {
-  position: absolute;
-  top: 1.2rem;
-  left: 1.2rem;
-  font-size: 0.9rem;
-  --btn-accent: var(--peach);
-}
 
 /* --- the dice --- */
 .dice-row {
@@ -49,7 +24,9 @@ h1 {
   font-family: var(--font-display);
   font-size: 2rem;
   font-weight: 600;
-  color: var(--ink);
+  /* charcoal, not var(--ink): the faces stay pastel in every theme,
+     and night's light ink would wash out against them */
+  color: #3f353a;
   /* hard offset shadow follows the clipped shape, unlike box-shadow */
   filter: drop-shadow(0 5px 0 rgba(63, 53, 58, 0.55));
 }
@@ -91,22 +68,6 @@ h1 {
   justify-content: center;
 }
 
-/* result line, fades in when the last die settles */
-.result {
-  font-family: var(--font-display);
-  font-size: 1.4rem;
-  font-weight: 500;
-  text-align: center;
-  min-height: 2rem;
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-.result.show {
-  opacity: 1;
-  transform: translateY(0);
-}
-
 /* --- panel controls --- */
 .field-label {
   font-family: var(--font-display);
@@ -135,7 +96,7 @@ h1 {
 .seg button.active {
   background: var(--sky);
   border-color: var(--ink);
-  color: var(--ink);
+  color: #3f353a; /* charcoal on the pastel fill, same as the dice faces */
   box-shadow: 0 2px 0 var(--ink);
 }
 

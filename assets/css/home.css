@@ -44,7 +44,7 @@
 
 /* --- the shelf --- */
 .shelf-wrap {
-  max-width: 780px;
+  max-width: 720px;
   margin: 0 auto;
   padding: 3.5rem 1.5rem 2rem;
 }
@@ -55,158 +55,232 @@
   letter-spacing: 0.1em;
   color: var(--ink-soft);
   font-size: 0.9rem;
-  margin: 0 0 1.4rem;
+  margin: 0 0 2rem; /* headroom for the hover lift */
 }
 
-/* books row: spines sit side by side, bottom-aligned on the plank.
-   perspective + preserve-3d make each book a real 3D object. */
+/* books stand pressed together on the plank, plus the plant and
+   the pencilled note at the right end */
 .books {
   display: flex;
   align-items: flex-end;
-  gap: 12px;
-  padding: 0 14px;
-  perspective: 900px;
-  /* eye level sits above the shelf, so the tops of the books
-     (and their depth) are visible even at rest */
-  perspective-origin: 50% -40%;
+  padding: 0 22px;
 }
 
-/* the wooden shelf plank */
-.shelf-plank {
-  height: 22px;
-  background: linear-gradient(to bottom,
-    #d4a870 0%,
-    #b57840 55%,
-    #8e5c28 100%);
-  border-radius: 3px;
-  box-shadow:
-    0 10px 28px rgba(63, 53, 58, 0.30),
-    inset 0 1px 0 rgba(255, 255, 255, 0.22);
-}
-
-/* individual book spine
-   ── To add a new toy: paste one <a class="book"> block in index.html
-      and set --book-color to one of the --book-1…6 palette vars. ── */
+/* ── one book ────────────────────────────────────────────────
+   Flat 2D spines, pressed together. The <a> is a fixed hitbox
+   that never moves (so hover can't flicker); the .book-spine
+   inside it lifts up out of the row. */
 .book {
-  --book-color: var(--book-1);
-  --book-h: 160px;
-  --book-depth: 44px; /* thickness: how deep the page block on top is */
+  --book-c: var(--book-1);
+  --book-h: 160px;  /* spine height */
+  --book-w: 40px;   /* spine width — thin, like a real spine */
 
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 60px;
+  width: var(--book-w);
   height: var(--book-h);
-  /* sheen layered over the spine colour */
-  background:
-    linear-gradient(to bottom,
-      rgba(255, 255, 255, 0.16) 0%,
-      transparent 30%,
-      rgba(0, 0, 0, 0.10) 100%),
-    var(--book-color);
-  border-radius: 2px 4px 4px 2px;
-  text-decoration: none;
   flex-shrink: 0;
-
-  /* real 3D: the ::after pages face lives in the book's own 3D space.
-     pivot at the bottom edge, so tipping keeps it resting on the shelf */
-  transform-style: preserve-3d;
-  transform-origin: 50% 100%;
-  transform: rotateX(-6deg); /* resting: leans out a touch, showing depth */
-
-  /* binding crease on left, bottom cast shadow */
-  box-shadow:
-    inset 8px 0 16px rgba(0, 0, 0, 0.22),
-    inset 2px 0 0 rgba(255, 255, 255, 0.20),
-    2px 4px 12px rgba(63, 53, 58, 0.18);
-
-  transition:
-    transform 0.38s var(--spring),
-    box-shadow 0.38s ease;
+  text-decoration: none;
 }
-
-/* pages on the right side — always-visible thickness */
-.book::before {
-  content: "";
-  position: absolute;
-  top: 3px;
-  right: -9px;
-  bottom: 3px;
-  width: 9px;
-  background: linear-gradient(to right,
-    #c8bfb4 0%,
-    #ddd6cc 30%,
-    #ede8e2 70%,
-    #f5f1ec 100%);
-  border-radius: 0 2px 2px 0;
-}
-
-/* the top face: the page edges, folded 90° backwards from the top
-   edge — becomes visible as the book tips toward you */
-.book::after {
-  content: "";
-  position: absolute;
-  bottom: 100%;
-  left: 1px;
-  right: 1px;
-  height: var(--book-depth);
-  transform-origin: center bottom;
-  transform: rotateX(90deg);
-  /* paper lines, fading darker toward the back of the book */
-  background:
-    linear-gradient(to top, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.12) 100%),
-    repeating-linear-gradient(to right,
-      #f2ede4 0px, #f2ede4 2px,
-      #dcd4c6 2px, #dcd4c6 3px);
-  border-radius: 2px 3px 0 0;
-  /* the pages count as part of the book's hitbox — otherwise hover
-     flickers when the tipping book moves out from under the cursor */
-  pointer-events: auto;
-}
-
-/* hover / focus: the book tips out of the shelf toward you,
-   like a finger pulling its top edge — pages show along the top */
-.book:hover,
-.book:focus-visible {
-  transform: rotateX(-28deg) scale(1.05);
-  box-shadow:
-    inset 8px 0 16px rgba(0, 0, 0, 0.22),
-    inset 2px 0 0 rgba(255, 255, 255, 0.20),
-    0 22px 34px rgba(63, 53, 58, 0.35);
-}
-.book:active {
-  transform: rotateX(-16deg) scale(1.02);
-}
+.book:hover { z-index: 2; } /* a lifted book paints over its neighbours */
+.book + .book { margin-left: -2px; } /* touching covers share one ink line */
 
 .book:focus-visible {
   outline: 3px solid var(--sky);
-  outline-offset: 4px;
+  outline-offset: 6px;
+  border-radius: 6px;
 }
 
+/* contact shadow on the plank; fades back as the book lifts off */
+.book::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  bottom: -7px;
+  height: 11px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center,
+    rgba(30, 22, 26, 0.32), transparent 68%);
+  transition: transform 0.45s var(--spring), opacity 0.45s ease;
+}
+.book:hover::after,
+.book:focus-visible::after { transform: scale(0.9, 0.8); opacity: 0.55; }
+
+/* spine: flat colour, ink outline — papercraft, like the buttons.
+   A whisper of side shading keeps it from going cardboard-flat.
+   On hover it slides straight up out of the row, like a finger
+   hooking it by the headband. */
+.book-spine {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background:
+    linear-gradient(to right,
+      rgba(255, 255, 255, 0.20), rgba(255, 255, 255, 0) 24%,
+      rgba(0, 0, 0, 0) 76%, rgba(0, 0, 0, 0.10)),
+    var(--book-c);
+  border: 2px solid var(--ink);
+  border-radius: 5px 5px 3px 3px;
+  transition: transform 0.45s var(--spring);
+}
+.book:hover .book-spine,
+.book:focus-visible .book-spine { transform: translateY(-16px); }
+.book:active .book-spine { transform: translateY(-8px); }
+
+/* embossed grooves near the head and tail of the spine */
+.book-spine::before,
+.book-spine::after {
+  content: "";
+  width: calc(100% - 14px);
+  height: 0;
+  border-top: 2px solid rgba(0, 0, 0, 0.14);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.30);
+}
+.book-spine::before { margin-top: 9px; }
+.book-spine::after  { margin-bottom: 11px; order: 1; } /* after the emblem */
+
 .book-title {
+  margin: auto; /* centers it in the leftover space between the grooves */
   writing-mode: vertical-rl;
   font-family: var(--font-display);
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--book-title-ink);
-  letter-spacing: 0.10em;
-  padding: 14px 0;
+  letter-spacing: 0.12em;
+  padding: 10px 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-height: calc(var(--book-h) - 28px);
-  transition: color 0.22s ease, text-shadow 0.22s ease;
-  pointer-events: none;
-  position: relative;
-  z-index: 2;
+  max-height: calc(var(--book-h) - 70px);
+  transition: color 0.25s ease, text-shadow 0.25s ease;
 }
 
-/* title lights up white as the book comes toward you */
+/* title lights up as the book lifts */
 .book:hover .book-title,
 .book:focus-visible .book-title {
-  color: rgba(255, 255, 255, 0.95);
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.20);
+  color: rgba(255, 255, 255, 0.96);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* the toy's emoji, a little sticker near the tail of the spine */
+.book-emblem {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-bottom: 8px;
+  font-size: 11px;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+}
+
+/* ── the plank: flat wood with a chunky front edge, same offset-
+   shadow language as .btn (wood edge ringed in ink, then a soft
+   drop onto the page) ─────────────────────────────────────── */
+.shelf-plank {
+  height: 16px;
+  background: var(--plank);
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  box-shadow:
+    0 6px 0 var(--plank-edge),
+    0 6px 0 2px var(--ink),
+    0 20px 26px rgba(30, 22, 26, 0.18);
+}
+
+/* ── shelf dressing ──────────────────────────────────────── */
+
+/* pencilled note, tucked before the plant at the right end */
+.shelf-note {
+  margin-left: auto;
+  padding: 0 4px 10px 1rem;
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  transform: rotate(-2deg);
+  white-space: nowrap;
+}
+
+/* a small potted plant, same papercraft style as the books */
+.shelf-plant {
+  position: relative;
+  width: 54px;
+  height: 88px;
+  flex-shrink: 0;
+}
+
+.shelf-plant::after { /* its own little contact shadow */
+  content: "";
+  position: absolute;
+  left: 5px;
+  right: 5px;
+  bottom: -6px;
+  height: 9px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center,
+    rgba(30, 22, 26, 0.28), transparent 68%);
+}
+
+.plant-leaves {
+  position: absolute;
+  left: 50%;
+  bottom: 26px;
+  width: 0;
+  height: 0;
+  transform-origin: 50% 100%;
+  animation: plant-sway 5s ease-in-out infinite alternate;
+}
+
+@keyframes plant-sway {
+  from { transform: rotate(-2.5deg); }
+  to   { transform: rotate(2.5deg); }
+}
+
+.leaf {
+  position: absolute;
+  bottom: 0;
+  left: -8px;
+  width: 16px;
+  height: 34px;
+  background: var(--sage);
+  border: 2px solid var(--ink);
+  border-radius: 50% 50% 45% 45% / 62% 62% 38% 38%;
+  transform-origin: 50% 100%;
+}
+.leaf-1 { transform: rotate(-34deg); height: 29px; }
+.leaf-2 { transform: rotate(2deg);   height: 38px; }
+.leaf-3 { transform: rotate(33deg);  height: 29px; }
+
+.plant-pot {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 28px;
+  background: var(--coral);
+  border: 2px solid var(--ink);
+  border-radius: 3px 3px 12px 12px;
+}
+
+.plant-pot::before { /* the rim, a touch wider than the pot */
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: -8px;
+  right: -8px;
+  height: 9px;
+  background: var(--coral);
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+}
+
+@media (max-width: 430px) {
+  .shelf-note { display: none; }        /* not enough shelf for the note */
+  .shelf-plant { margin-left: auto; }   /* the plant takes over its spacer */
 }
 
 /* --- footer: the name, quietly explained --- */
@@ -220,6 +294,11 @@
 .foot .def b { color: var(--coral); font-weight: 700; }
 
 @media (prefers-reduced-motion: reduce) {
-  .book { transition: box-shadow 0.2s ease; }
-  .book:hover, .book:focus-visible, .book:active { transform: rotateX(-6deg); }
+  .book-spine, .book::after { transition: none; }
+  .book:hover .book-spine,
+  .book:focus-visible .book-spine,
+  .book:active .book-spine { transform: none; } /* title still lights up */
+  .book:hover::after,
+  .book:focus-visible::after { transform: none; opacity: 1; }
+  .plant-leaves { animation: none; }
 }

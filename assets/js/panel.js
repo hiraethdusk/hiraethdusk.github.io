@@ -4,5 +4,7 @@
 // ============================================================
 document.addEventListener('click', (e) => {
   const title = e.target.closest('.panel-title');
-  if (title) title.closest('.panel').classList.toggle('collapsed');
+  if (!title) return;
+  const collapsed = title.closest('.panel').classList.toggle('collapsed');
+  title.setAttribute('aria-expanded', String(!collapsed));
 });

@@ -4,11 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>spinner · hiraethdusk</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext x='8' y='13' text-anchor='middle' font-size='13'%3E%F0%9F%8E%A1%3C/text%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/assets/css/base.css" />
   <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link rel="stylesheet" href="/assets/css/toy.css" />
   <link rel="stylesheet" href="/assets/css/spinner.css" />
   <script src="/assets/js/theme.js"></script>
   <script src="/assets/js/panel.js" defer></script>
@@ -30,7 +32,7 @@
     </div>
 
     <aside class="panel">
-      <button class="panel-title" type="button">⚙ options</button>
+      <button class="panel-title" type="button" aria-expanded="true">⚙ options</button>
       <div class="panel-body">
         <div class="edit-inner" id="edit-inner">
           <!-- rows injected by JS -->
@@ -61,16 +63,23 @@ const ctx    = canvas.getContext('2d');
 const W      = canvas.width;
 const CX     = W / 2, CY = W / 2, R = W / 2 - 8;
 
-// ---- palette: same tokens as base.css, kept in sync manually ----
-const SLICE_COLOURS = [
-  '#f9b48f', // peach
-  '#9ec9d8', // sky
-  '#f2a7b8', // rose
-  '#a9ccae', // sage
-  '#f6cf7d', // gold
-  '#f58a72', // coral
-  '#c9b8ec', // soft lavender (one controlled use, as a 6th)
-];
+// ---- palette: read from the CSS tokens, so themes (dawn swaps
+// the coral) recolour the wheel too. Refreshed on theme change. ----
+const ACCENT_TOKENS = ['--peach', '--sky', '--rose', '--sage', '--gold', '--coral'];
+
+function readPalette() {
+  const cs = getComputedStyle(document.documentElement);
+  const cols = ACCENT_TOKENS.map(t => cs.getPropertyValue(t).trim());
+  cols.push('#c9b8ec'); // soft lavender — the one colour with no token
+  return cols;
+}
+
+let SLICE_COLOURS = readPalette();
+
+window.addEventListener('hd-theme', () => {
+  SLICE_COLOURS = readPalette();
+  drawWheel(rotation);
+});
 
 // ---- state ----
 let options   = ['Pizza', 'Tacos', 'Sushi', 'Burgers', 'Pasta'];

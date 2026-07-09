@@ -1,8 +1,12 @@
 // ============================================================
 //  theme.js — theme switching for every hiraethdusk page.
 //  Sets data-theme on <html> (which themes.css reacts to),
-//  remembers the choice in localStorage, and injects the
-//  corner toggle button that cycles base → night → dawn.
+//  remembers an explicit choice in localStorage, and injects
+//  the corner toggle button that cycles dusk → night → dawn.
+//  First-time visitors whose OS prefers dark start on night.
+//
+//  Every theme change fires a 'hd-theme' event on window, so
+//  canvas-based toys can re-read the palette and repaint.
 //
 //  Load this in <head> WITHOUT defer: applying the saved theme
 //  before first paint avoids a flash of the wrong colours.
@@ -16,13 +20,21 @@
 
   let saved = null;
   try { saved = localStorage.getItem('hd-theme'); } catch (e) { /* private mode */ }
-  let idx = Math.max(0, THEMES.findIndex(t => t.id === saved));
 
-  applyTheme();
+  let idx = THEMES.findIndex(t => t.id === saved);
+  if (idx < 0) {
+    const dark = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches;
+    idx = dark ? 1 : 0;
+  }
 
-  function applyTheme() {
+  applyTheme(false); // don't persist an implicit default — only real clicks
+
+  function applyTheme(persist) {
     document.documentElement.dataset.theme = THEMES[idx].id;
-    try { localStorage.setItem('hd-theme', THEMES[idx].id); } catch (e) { /* ignore */ }
+    if (persist) {
+      try { localStorage.setItem('hd-theme', THEMES[idx].id); } catch (e) { /* ignore */ }
+    }
+    window.dispatchEvent(new CustomEvent('hd-theme', { detail: THEMES[idx].id }));
   }
 
   function makeButton() {
@@ -38,7 +50,7 @@
 
     btn.addEventListener('click', () => {
       idx = (idx + 1) % THEMES.length;
-      applyTheme();
+      applyTheme(true);
       render();
     });
 
